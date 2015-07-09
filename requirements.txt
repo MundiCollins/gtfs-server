@@ -5,4 +5,5 @@ djangorestframework==3.1.3
 djangorestframework-gis==0.9.1
 jsonfield==1.0.3
 -e git+https://github.com/inmagik/django-multi-gtfs
+psycopg2==2.6.1
 wsgiref==0.1.2
