@@ -21,6 +21,6 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', TemplateView.as_view(template_name="explore/home.html"),
         name='home'),
-    url(r'', include('exploreapp.urls')),
+    url(r'^explore', include('exploreapp.urls')),
     url(r'^api/', include('gtfsapi.urls'))
 ]

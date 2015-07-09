@@ -1,11 +1,19 @@
-from rest_framework.routers import SimpleRouter
-from .views import AgencyViewSet, RouteViewSet, GeoRouteViewSet, StopViewSet, GeoStopViewSet
+#from rest_framework.routers import SimpleRouter
+from rest_framework_nested import routers
 
-router = SimpleRouter()
-router.register('agencies', AgencyViewSet)
-router.register('routes.geojson', GeoRouteViewSet)
-router.register('routes', RouteViewSet)
-router.register('stops.geojson', GeoStopViewSet)
-router.register('stops', StopViewSet)
+from .views import FeedViewSet, AgencyViewSet, RouteViewSet, GeoRouteViewSet, StopViewSet, GeoStopViewSet
 
-urlpatterns = router.urls
+router = routers.SimpleRouter()
+router.register(r'feeds', FeedViewSet)
+
+feeds_router = routers.NestedSimpleRouter(router, r'feeds', lookup='feed')
+
+feeds_router.register('agencies', AgencyViewSet)
+feeds_router.register('routes.geojson', GeoRouteViewSet)
+feeds_router.register('routes', RouteViewSet)
+feeds_router.register('stops.geojson', GeoStopViewSet)
+feeds_router.register('stops', StopViewSet)
+
+
+urlpatterns = router.urls + feeds_router.urls
+    
