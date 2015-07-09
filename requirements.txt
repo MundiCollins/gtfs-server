@@ -1,0 +1,4 @@
+Django==1.8.3
+jsonfield==1.0.3
+-e git+https://github.com/inmagik/django-multi-gtfs
+wsgiref==0.1.2
