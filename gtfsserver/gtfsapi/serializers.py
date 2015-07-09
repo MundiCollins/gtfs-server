@@ -27,5 +27,5 @@ class StopSerializer(ModelSerializer):
 class GeoStopSerializer(GeoFeatureModelSerializer):
     class Meta:
         model = Stop
-        geo_field = "geometry"
+        geo_field = "point"
         auto_bbox = True
