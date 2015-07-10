@@ -4,7 +4,7 @@ from rest_framework_gis.filters import InBBoxFilter
 from rest_framework.response import Response
 
 from multigtfs.models import Agency, Route, Stop, Feed
-from .serializers import AgencySerializer, GeoRouteSerializer, RouteSerializer, GeoStopSerializer, StopSerializer, FeedSerializer
+from .serializers import AgencySerializer, GeoRouteSerializer, RouteSerializer, GeoStopSerializer, StopSerializer, FeedSerializer, FeedInfoSerializer
 
 
 class InBBoxFilterBBox(InBBoxFilter):
@@ -13,6 +13,10 @@ class InBBoxFilterBBox(InBBoxFilter):
 
 class FeedViewSet(ModelViewSet):
     serializer_class = FeedSerializer
+    queryset = Feed.objects.all()
+
+class FeedGeoViewSet(ModelViewSet):
+    serializer_class = FeedInfoSerializer
     queryset = Feed.objects.all()
 
 
