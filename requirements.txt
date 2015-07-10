@@ -8,3 +8,5 @@ jsonfield==1.0.3
 -e git+https://github.com/inmagik/django-multi-gtfs#egg=multigtfs
 psycopg2==2.6.1
 wsgiref==0.1.2
+python-memcached==1.54
+six==1.9.0
