@@ -27,7 +27,7 @@ except:
 SECRET_KEY = 'i8rk5$)ph39&6p(2md*r_jup+5#fjyn&10u^#0d^4(aeuv%)sa'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
