@@ -28,7 +28,7 @@ class AgencySerializer(ModelSerializer):
 class RouteSerializer(ModelSerializer):
     class Meta:
         model = Route
-        excluded_fields = ['geometry']
+        exclude = ['geometry']
 
 
 class GeoRouteSerializer(GeoFeatureModelSerializer):
@@ -41,7 +41,7 @@ class GeoRouteSerializer(GeoFeatureModelSerializer):
 class StopSerializer(ModelSerializer):
     class Meta:
         model = Stop
-        excluded_fields = ['point']
+        exclude = ['point']
 
 
 class GeoStopSerializer(GeoFeatureModelSerializer):
