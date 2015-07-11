@@ -38,17 +38,17 @@ class UpdatedAtKeyBit(KeyBitBase):
 class CustomObjectKeyConstructor(DefaultKeyConstructor):
     #retrieve_sql = RetrieveSqlQueryKeyBit()
     updated_at = UpdatedAtKeyBit()
-    query = QueryParamsKeyBit()
+    #query = QueryParamsKeyBit()
     meth = UniqueMethodIdKeyBit()
-    kwargs = KwargsKeyBit()
+    #kwargs = KwargsKeyBit()
 
 class CustomListKeyConstructor(DefaultKeyConstructor):
     #list_sql = ListSqlQueryKeyBit()
-    pagination = PaginationKeyBit()
+    #pagination = PaginationKeyBit()
     updated_at = UpdatedAtKeyBit()
-    query = QueryParamsKeyBit()
+    #query = QueryParamsKeyBit()
     meth = UniqueMethodIdKeyBit()
-    kwargs = KwargsKeyBit()
+    #kwargs = KwargsKeyBit()
 
 
 #Cache invalidation
