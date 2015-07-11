@@ -36,14 +36,14 @@ class UpdatedAtKeyBit(KeyBitBase):
         return force_text(value)
 
 class CustomObjectKeyConstructor(DefaultKeyConstructor):
-    retrieve_sql = RetrieveSqlQueryKeyBit()
+    #retrieve_sql = RetrieveSqlQueryKeyBit()
     updated_at = UpdatedAtKeyBit()
     query = QueryParamsKeyBit()
     meth = UniqueMethodIdKeyBit()
     kwargs = KwargsKeyBit()
 
 class CustomListKeyConstructor(DefaultKeyConstructor):
-    list_sql = ListSqlQueryKeyBit()
+    #list_sql = ListSqlQueryKeyBit()
     pagination = PaginationKeyBit()
     updated_at = UpdatedAtKeyBit()
     query = QueryParamsKeyBit()
