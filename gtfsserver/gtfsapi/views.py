@@ -77,7 +77,7 @@ class FeedGeoViewSet(ModelViewSet):
     queryset = Feed.objects.all()
 
 
-class FeedNestedViewSet(ModelViewSet):
+class FeedNestedCachedViewSet(ModelViewSet):
 
     @cache_response(cache="filebased", key_func=CustomListKeyConstructor())
     def list(self, request, feed_pk=None):
@@ -98,12 +98,31 @@ class FeedNestedViewSet(ModelViewSet):
 
 
 
+class FeedNestedViewSet(ModelViewSet):
+
+    def list(self, request, feed_pk=None):
+        queryset= self.queryset.filter(feed=feed_pk)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None, feed_pk=None):
+        instance = self.queryset.get(pk=pk, feed_pk=feed_pk)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+
 class AgencyViewSet(FeedNestedViewSet):
     serializer_class = AgencySerializer
     queryset = Agency.objects.all()
 
 
-class GeoRouteViewSet(FeedNestedViewSet):
+class GeoRouteViewSet(FeedNestedCachedViewSet):
     serializer_class = GeoRouteSerializer
     queryset = Route.objects.all()
     pagination_class = None
@@ -116,7 +135,7 @@ class RouteViewSet(FeedNestedViewSet):
     queryset = Route.objects.all()
 
 
-class GeoStopViewSet(FeedNestedViewSet):
+class GeoStopViewSet(FeedNestedCachedViewSet):
     serializer_class = GeoStopSerializer
     queryset = Stop.objects.all()
     pagination_class = None
