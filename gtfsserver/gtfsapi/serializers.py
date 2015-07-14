@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer,SerializerMethodField
+from rest_framework.serializers import ModelSerializer,SerializerMethodField, FloatField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from multigtfs.models import Feed, Agency, Route, Stop, Service, ServiceDate, Trip
 
@@ -58,6 +58,20 @@ class GeoStopSerializer(GeoFeatureModelSerializer):
         geo_field = "point"
         #auto_bbox = True
 
+
+class StopSerializerWithDistance(StopSerializer):
+    distance = SerializerMethodField(required=False, read_only=True)
+    def get_distance(self, obj):
+        if not obj.distance:
+            return None
+        return float(obj.distance.km)
+
+class GeoStopSerializerWithDistance(GeoStopSerializer):
+    distance = SerializerMethodField(required=False, read_only=True)
+    def get_distance(self, obj):
+        if not obj.distance:
+            return None
+        return float(obj.distance.km)
 
 class ServiceDateSerializer(ModelSerializer):
     class Meta:

@@ -1,13 +1,18 @@
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.mixins import ListModelMixin
 from rest_framework.filters import DjangoFilterBackend
 from rest_framework_gis.filters import InBBoxFilter
 from rest_framework.response import Response
 from rest_framework_extensions.cache.decorators import cache_response
+from rest_framework.views import APIView
+from rest_framework import generics
 
 from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip
 from .serializers import ( AgencySerializer,
                             GeoRouteSerializer, RouteSerializer, RouteWithTripsSerializer,
-                            GeoStopSerializer, StopSerializer, FeedSerializer,
+                            GeoStopSerializer, StopSerializer, StopSerializerWithDistance,
+                            GeoStopSerializerWithDistance,
+                            FeedSerializer,
                             FeedInfoSerializer, ServiceSerializer, ServiceWithDatesSerializer,
                             ServiceDateSerializer,
                             TripSerializer )
@@ -265,3 +270,36 @@ class RouteTripViewSet(RouteNestedViewSet):
 class FeedRouteTripViewSet(RouteFeedNestedViewSet):
     serializer_class = TripSerializer
     queryset = Trip.objects.all()
+
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
+from rest_framework import filters
+
+class StopsNearView(generics.ListAPIView):
+    serializer_class = StopSerializerWithDistance
+    queryset = Stop.objects.all()
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('feed', )
+
+    def list(self, request, x=None, y=None):
+        queryset = self.get_queryset()
+        queryset = self.filter_queryset(queryset)
+        radius = request.query_params.get('radius', 1.0)
+        radius = float(radius)
+        point = Point(float(x), float(y))
+        queryset = queryset.distance(point).filter(point__distance_lt=(point, D(km=radius)))
+
+        page = None
+        if self.pagination_class:
+            page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class GeoStopsNearView(StopsNearView):
+    serializer_class = GeoStopSerializerWithDistance
+    pagination_class = None
