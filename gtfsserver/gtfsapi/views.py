@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework_extensions.cache.decorators import cache_response
 from rest_framework.views import APIView
 from rest_framework import generics
+from django.db.models import Q
 
 from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip
 from .serializers import ( AgencySerializer,
@@ -35,6 +36,8 @@ from rest_framework_extensions.key_constructor.bits import (
     UniqueMethodIdKeyBit,
     KwargsKeyBit
 )
+
+from .helpers import active_services_from_date
 
 class UpdatedAtKeyBit(KeyBitBase):
     def get_data(self, **kwargs):
@@ -281,25 +284,50 @@ class StopsNearView(generics.ListAPIView):
     filter_backends = (filters.DjangoFilterBackend,)
     filter_fields = ('feed', )
 
-    def list(self, request, x=None, y=None):
-        queryset = self.get_queryset()
+
+    def get_queryset(self):
+        queryset = super(StopsNearView, self).get_queryset()
         queryset = self.filter_queryset(queryset)
-        radius = request.query_params.get('radius', 1.0)
+        radius = self.request.query_params.get('radius', 1.0)
         radius = float(radius)
+        x = self.kwargs['x']
+        y = self.kwargs['y']
         point = Point(float(x), float(y))
         queryset = queryset.distance(point).filter(point__distance_lt=(point, D(km=radius)))
-
-        page = None
-        if self.pagination_class:
-            page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return queryset
 
 
 class GeoStopsNearView(StopsNearView):
     serializer_class = GeoStopSerializerWithDistance
     pagination_class = None
+
+
+
+class ServicesActiveView(generics.ListAPIView):
+    serializer_class = ServiceSerializer
+    queryset = Service.objects.all()
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('feed', )
+
+    def get_queryset(self):
+        qset = super(ServicesActiveView, self).get_queryset()
+        year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
+        requested_date = datetime.date(year, month, day)
+        qset = active_services_from_date(requested_date, qset)
+        return qset
+
+
+
+class TripsActiveView(generics.ListAPIView):
+    serializer_class = TripSerializer
+    queryset = Trip.objects.all()
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('service__feed', )
+
+    def get_queryset(self):
+        qset = super(TripsActiveView, self).get_queryset()
+        year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
+        requested_date = datetime.date(year, month, day)
+        services = active_services_from_date(requested_date)
+        active_trips = qset.filter(service__in=services)
+        return active_trips
