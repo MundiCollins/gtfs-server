@@ -1,11 +1,13 @@
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.filters import DjangoFilterBackend
 from rest_framework_gis.filters import InBBoxFilter
 from rest_framework.response import Response
-
-from multigtfs.models import Agency, Route, Stop, Feed
-from .serializers import AgencySerializer, GeoRouteSerializer, RouteSerializer, GeoStopSerializer, StopSerializer, FeedSerializer, FeedInfoSerializer
 from rest_framework_extensions.cache.decorators import cache_response
+
+from multigtfs.models import Agency, Route, Stop, Feed, Service
+from .serializers import ( AgencySerializer, GeoRouteSerializer, RouteSerializer,
+                            GeoStopSerializer, StopSerializer, FeedSerializer,
+                            FeedInfoSerializer, ServiceSerializer)
 
 
 import datetime
@@ -15,6 +17,7 @@ from rest_framework_extensions.cache.decorators import cache_response
 from rest_framework_extensions.key_constructor.constructors import (
     DefaultKeyConstructor
 )
+
 from rest_framework_extensions.key_constructor.bits import (
     KeyBitBase,
     RetrieveSqlQueryKeyBit,
@@ -67,17 +70,17 @@ class InBBoxFilterBBox(InBBoxFilter):
     bbox_param = "bbox"
 
 
-class FeedViewSet(ModelViewSet):
+class FeedViewSet(ReadOnlyModelViewSet):
     serializer_class = FeedSerializer
     queryset = Feed.objects.all()
 
 
-class FeedGeoViewSet(ModelViewSet):
+class FeedGeoViewSet(ReadOnlyModelViewSet):
     serializer_class = FeedInfoSerializer
     queryset = Feed.objects.all()
 
 
-class FeedNestedCachedViewSet(ModelViewSet):
+class FeedNestedCachedViewSet(ReadOnlyModelViewSet):
 
     @cache_response(cache="filebased", key_func=CustomListKeyConstructor())
     def list(self, request, feed_pk=None):
@@ -98,7 +101,7 @@ class FeedNestedCachedViewSet(ModelViewSet):
 
 
 
-class FeedNestedViewSet(ModelViewSet):
+class FeedNestedViewSet(ReadOnlyModelViewSet):
 
     def list(self, request, feed_pk=None):
         queryset= self.queryset.filter(feed=feed_pk)
@@ -116,8 +119,12 @@ class FeedNestedViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
+class AgencyViewSet(ReadOnlyModelViewSet):
+    serializer_class = AgencySerializer
+    queryset = Agency.objects.all()
 
-class AgencyViewSet(FeedNestedViewSet):
+
+class FeedAgencyViewSet(FeedNestedViewSet):
     serializer_class = AgencySerializer
     queryset = Agency.objects.all()
 
@@ -145,3 +152,8 @@ class GeoStopViewSet(FeedNestedCachedViewSet):
 class StopViewSet(FeedNestedViewSet):
     serializer_class = StopSerializer
     queryset = Stop.objects.all()
+
+
+class ServiceViewSet(FeedNestedViewSet):
+    serializer_class = ServiceSerializer
+    queryset = Service.objects.all()

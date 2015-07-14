@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer,SerializerMethodField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
-from multigtfs.models import Feed, Agency, Route, Stop
+from multigtfs.models import Feed, Agency, Route, Stop, Service
 
 
 from django.contrib.gis.db.models.aggregates import Extent
@@ -49,3 +49,8 @@ class GeoStopSerializer(GeoFeatureModelSerializer):
         model = Stop
         geo_field = "point"
         #auto_bbox = True
+
+
+class ServiceSerializer(ModelSerializer):
+    class Meta:
+        model = Service
