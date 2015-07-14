@@ -1,11 +1,16 @@
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.filters import DjangoFilterBackend
 from rest_framework_gis.filters import InBBoxFilter
 from rest_framework.response import Response
-
-from multigtfs.models import Agency, Route, Stop, Feed
-from .serializers import AgencySerializer, GeoRouteSerializer, RouteSerializer, GeoStopSerializer, StopSerializer, FeedSerializer, FeedInfoSerializer
 from rest_framework_extensions.cache.decorators import cache_response
+
+from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip
+from .serializers import ( AgencySerializer,
+                            GeoRouteSerializer, RouteSerializer, RouteWithTripsSerializer,
+                            GeoStopSerializer, StopSerializer, FeedSerializer,
+                            FeedInfoSerializer, ServiceSerializer, ServiceWithDatesSerializer,
+                            ServiceDateSerializer,
+                            TripSerializer )
 
 
 import datetime
@@ -15,6 +20,7 @@ from rest_framework_extensions.cache.decorators import cache_response
 from rest_framework_extensions.key_constructor.constructors import (
     DefaultKeyConstructor
 )
+
 from rest_framework_extensions.key_constructor.bits import (
     KeyBitBase,
     RetrieveSqlQueryKeyBit,
@@ -67,17 +73,17 @@ class InBBoxFilterBBox(InBBoxFilter):
     bbox_param = "bbox"
 
 
-class FeedViewSet(ModelViewSet):
+class FeedViewSet(ReadOnlyModelViewSet):
     serializer_class = FeedSerializer
     queryset = Feed.objects.all()
 
 
-class FeedGeoViewSet(ModelViewSet):
+class FeedGeoViewSet(ReadOnlyModelViewSet):
     serializer_class = FeedInfoSerializer
     queryset = Feed.objects.all()
 
 
-class FeedNestedCachedViewSet(ModelViewSet):
+class FeedNestedCachedViewSet(ReadOnlyModelViewSet):
 
     @cache_response(cache="filebased", key_func=CustomListKeyConstructor())
     def list(self, request, feed_pk=None):
@@ -98,7 +104,7 @@ class FeedNestedCachedViewSet(ModelViewSet):
 
 
 
-class FeedNestedViewSet(ModelViewSet):
+class FeedNestedViewSet(ReadOnlyModelViewSet):
 
     def list(self, request, feed_pk=None):
         queryset= self.queryset.filter(feed=feed_pk)
@@ -111,13 +117,17 @@ class FeedNestedViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None, feed_pk=None):
-        instance = self.queryset.get(pk=pk, feed_pk=feed_pk)
+        instance = self.queryset.get(pk=pk, feed__pk=feed_pk)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
 
+class AgencyViewSet(ReadOnlyModelViewSet):
+    serializer_class = AgencySerializer
+    queryset = Agency.objects.all()
 
-class AgencyViewSet(FeedNestedViewSet):
+
+class FeedAgencyViewSet(FeedNestedViewSet):
     serializer_class = AgencySerializer
     queryset = Agency.objects.all()
 
@@ -133,7 +143,14 @@ class GeoRouteViewSet(FeedNestedCachedViewSet):
 class RouteViewSet(FeedNestedViewSet):
     serializer_class = RouteSerializer
     queryset = Route.objects.all()
-
+    """
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return RouteSerializer
+        if self.action == 'retrieve':
+            return RouteWithTripsSerializer
+        return serializers.Default
+    """
 
 class GeoStopViewSet(FeedNestedCachedViewSet):
     serializer_class = GeoStopSerializer
@@ -145,3 +162,106 @@ class GeoStopViewSet(FeedNestedCachedViewSet):
 class StopViewSet(FeedNestedViewSet):
     serializer_class = StopSerializer
     queryset = Stop.objects.all()
+
+
+class ServiceViewSet(FeedNestedViewSet):
+    serializer_class = ServiceSerializer
+    queryset = Service.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ServiceSerializer
+        if self.action == 'retrieve':
+            return ServiceWithDatesSerializer
+        return serializers.Default
+
+
+
+class ServiceFeedNestedViewSet(ReadOnlyModelViewSet):
+
+    def list(self, request, feed_pk=None):
+        queryset= self.queryset.filter(service__feed=feed_pk)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None, feed_pk=None):
+        instance = self.queryset.get(pk=pk, service__feed__pk=feed_pk)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class ServiceNestedViewSet(ReadOnlyModelViewSet):
+
+    def list(self, request, feed_pk=None, service_pk=None):
+        queryset= self.queryset.filter(service=service_pk)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None, feed_pk=None, service_pk=None):
+        instance = self.queryset.get(pk=pk, service__pk=service_pk)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class RouteNestedViewSet(ReadOnlyModelViewSet):
+
+    def list(self, request, feed_pk=None, route_pk=None):
+        queryset= self.queryset.filter(route=route_pk)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None, feed_pk=None, route_pk=None):
+        instance = self.queryset.get(pk=pk, route__pk=service_pk)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class RouteFeedNestedViewSet(ReadOnlyModelViewSet):
+
+    def list(self, request, feed_pk=None):
+        queryset= self.queryset.filter(route__feed=feed_pk)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None, feed_pk=None):
+        instance = self.queryset.get(pk=pk, route__feed__pk=feed_pk)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class ServiceServiceDateViewSet(ServiceNestedViewSet):
+    serializer_class = ServiceDateSerializer
+    queryset = ServiceDate.objects.all()
+
+class FeedServiceDateViewSet(ServiceFeedNestedViewSet):
+    serializer_class = ServiceDateSerializer
+    queryset = ServiceDate.objects.all()
+
+
+class RouteTripViewSet(RouteNestedViewSet):
+    serializer_class = TripSerializer
+    queryset = Trip.objects.all()
+
+class FeedRouteTripViewSet(RouteFeedNestedViewSet):
+    serializer_class = TripSerializer
+    queryset = Trip.objects.all()

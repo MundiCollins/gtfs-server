@@ -26,7 +26,7 @@ class ServiceDate(Base):
 
     Implements calendar_dates.txt
     """
-    service = models.ForeignKey('Service')
+    service = models.ForeignKey('Service', related_name="service_dates")
     date = models.DateField(
         help_text="Date that the service differs from the norm.")
     exception_type = models.IntegerField(

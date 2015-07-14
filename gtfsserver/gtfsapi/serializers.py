@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer,SerializerMethodField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
-from multigtfs.models import Feed, Agency, Route, Stop
+from multigtfs.models import Feed, Agency, Route, Stop, Service, ServiceDate, Trip
 
 
 from django.contrib.gis.db.models.aggregates import Extent
@@ -25,10 +25,18 @@ class AgencySerializer(ModelSerializer):
         model = Agency
 
 
+class TripSerializer(ModelSerializer):
+    class Meta:
+        model = Trip
+        exclude = ['geometry']
+
 class RouteSerializer(ModelSerializer):
     class Meta:
         model = Route
         exclude = ['geometry']
+
+class RouteWithTripsSerializer(RouteSerializer):
+    trips = TripSerializer(many=True, read_only=True)
 
 
 class GeoRouteSerializer(GeoFeatureModelSerializer):
@@ -49,3 +57,17 @@ class GeoStopSerializer(GeoFeatureModelSerializer):
         model = Stop
         geo_field = "point"
         #auto_bbox = True
+
+
+class ServiceDateSerializer(ModelSerializer):
+    class Meta:
+        model = ServiceDate
+
+
+class ServiceSerializer(ModelSerializer):
+    #service_dates = ServiceDateSerializer(many=True, read_only=True)
+    class Meta:
+        model = Service
+
+class ServiceWithDatesSerializer(ServiceSerializer):
+    service_dates = ServiceDateSerializer(many=True, read_only=True)
