@@ -37,6 +37,8 @@ from rest_framework_extensions.key_constructor.bits import (
     KwargsKeyBit
 )
 
+from .helpers import active_services_from_date
+
 class UpdatedAtKeyBit(KeyBitBase):
     def get_data(self, **kwargs):
         feed_pk = kwargs['kwargs'].get('feed_pk', '0')
@@ -311,23 +313,21 @@ class ServicesActiveView(generics.ListAPIView):
         qset = super(ServicesActiveView, self).get_queryset()
         year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
         requested_date = datetime.date(year, month, day)
-
-        days = ["sunday", "monday", "tuesday","wednesday","thursday","friday","saturday" ]
-        days_pos = int(requested_date.strftime("%w"))
-        current_day = days[days_pos]
-        params = { current_day : True }
-        qset = qset.filter(**params)
-        start_date_q = Q(start_date=None) |  Q(start_date__lte=requested_date)
-        end_date_q= Q(end_date=None) |  Q(end_date__gte=requested_date)
-        qset = qset.filter (start_date_q | end_date_q)
-
-        #considering calendar dates (service_dates)
-        valid_dates = ServiceDate.objects.filter(date=requested_date, exception_type=1)
-        services_for_valid = valid_dates.values_list('service', flat=True)
-        qset = qset.filter(pk__in=services_for_valid)
-
-        invalid_dates = ServiceDate.objects.filter(date=requested_date, exception_type=2)
-        services_for_invalid = invalid_dates.values_list('service', flat=True)
-        qset = qset.exclude(pk__in=services_for_invalid)
-
+        qset = active_services_from_date(requested_date, qset)
         return qset
+
+
+
+class TripsActiveView(generics.ListAPIView):
+    serializer_class = TripSerializer
+    queryset = Trip.objects.all()
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('service__feed', )
+
+    def get_queryset(self):
+        qset = super(TripsActiveView, self).get_queryset()
+        year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
+        requested_date = datetime.date(year, month, day)
+        services = active_services_from_date(requested_date)
+        active_trips = qset.filter(service__in=services)
+        return active_trips

@@ -7,7 +7,7 @@ from .views import ( FeedViewSet, FeedGeoViewSet, AgencyViewSet, FeedAgencyViewS
                     FeedServiceDateViewSet, ServiceServiceDateViewSet,
                     FeedRouteTripViewSet, RouteTripViewSet  )
 
-from .views import StopsNearView, GeoStopsNearView, ServicesActiveView
+from .views import StopsNearView, GeoStopsNearView, ServicesActiveView, TripsActiveView
 
 router = routers.SimpleRouter()
 router.register(r'feeds', FeedViewSet)
@@ -38,6 +38,7 @@ urls = [
     url(u'stops-near.geojson/(?P<x>\d+\.\d+)/(?P<y>\d+\.\d+)/$', GeoStopsNearView.as_view(), name="stops-near.geojson"),
 
     url(u'services-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', ServicesActiveView.as_view(), name="services-active"),
+    url(u'trips-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', TripsActiveView.as_view(), name="services-active"),
 
 ]
 urlpatterns = router.urls + feeds_router.urls + services_router.urls + routes_router.urls + urls
