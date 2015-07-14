@@ -47,6 +47,7 @@ INSTALLED_APPS = (
     'debug_toolbar',
     'multigtfs',
     'exploreapp',
+    'rest_framework_swagger',
 )
 
 MIDDLEWARE_CLASSES = (
