@@ -155,7 +155,7 @@ class RouteViewSet(FeedNestedViewSet):
 
     @list_route()
     def _rtype(self, request, feed_pk=None):
-        types = self.queryset.values_list('rtype', flat=True).distinct()
+        types = self.queryset.filter(feed__pk=feed_pk).values_list('rtype', flat=True).distinct()
         avail_types = dict(Route._meta.get_field('rtype').choices)
         out_types = {}
         for x in types:
