@@ -22,5 +22,6 @@ urlpatterns = [
     url(r'^$', TemplateView.as_view(template_name="explore/home.html"),
         name='home'),
     url(r'^explore', include('exploreapp.urls')),
-    url(r'^api/', include('gtfsapi.urls'))
+    url(r'^api/', include('gtfsapi.urls')),
+    url(r'^apidocs/', include('rest_framework_swagger.urls')),
 ]
