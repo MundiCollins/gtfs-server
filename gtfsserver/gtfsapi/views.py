@@ -4,6 +4,7 @@ from rest_framework.filters import DjangoFilterBackend
 from rest_framework_gis.filters import InBBoxFilter
 from rest_framework.response import Response
 from rest_framework_extensions.cache.decorators import cache_response
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.views import APIView
 from rest_framework import generics
 from django.db.models import Q
@@ -151,6 +152,15 @@ class GeoRouteViewSet(FeedNestedCachedViewSet):
 class RouteViewSet(FeedNestedViewSet):
     serializer_class = RouteSerializer
     queryset = Route.objects.all()
+
+    @list_route()
+    def _rtype(self, request, feed_pk=None):
+        types = self.queryset.values_list('rtype', flat=True).distinct()
+        avail_types = dict(Route._meta.get_field('rtype').choices)
+        out_types = {}
+        for x in types:
+            out_types[x] = avail_types[x]
+        return Response(out_types)
     """
     def get_serializer_class(self):
         if self.action == 'list':
@@ -222,6 +232,9 @@ class ServiceNestedViewSet(ReadOnlyModelViewSet):
 
 
 class RouteNestedViewSet(ReadOnlyModelViewSet):
+
+
+
 
     def list(self, request, feed_pk=None, route_pk=None):
         queryset= self.queryset.filter(route=route_pk)
