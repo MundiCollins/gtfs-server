@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework_extensions.cache.decorators import cache_response
 from rest_framework.views import APIView
 from rest_framework import generics
+from django.db.models import Q
 
 from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip
 from .serializers import ( AgencySerializer,
@@ -281,25 +282,52 @@ class StopsNearView(generics.ListAPIView):
     filter_backends = (filters.DjangoFilterBackend,)
     filter_fields = ('feed', )
 
-    def list(self, request, x=None, y=None):
-        queryset = self.get_queryset()
+
+    def get_queryset(self):
+        queryset = super(StopsNearView, self).get_queryset()
         queryset = self.filter_queryset(queryset)
-        radius = request.query_params.get('radius', 1.0)
+        radius = self.request.query_params.get('radius', 1.0)
         radius = float(radius)
+        x = self.kwargs['x']
+        y = self.kwargs['y']
         point = Point(float(x), float(y))
         queryset = queryset.distance(point).filter(point__distance_lt=(point, D(km=radius)))
-
-        page = None
-        if self.pagination_class:
-            page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return queryset
 
 
 class GeoStopsNearView(StopsNearView):
     serializer_class = GeoStopSerializerWithDistance
     pagination_class = None
+
+
+
+class ServicesActiveView(generics.ListAPIView):
+    serializer_class = ServiceSerializer
+    queryset = Service.objects.all()
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('feed', )
+
+    def get_queryset(self):
+        qset = super(ServicesActiveView, self).get_queryset()
+        year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
+        requested_date = datetime.date(year, month, day)
+
+        days = ["sunday", "monday", "tuesday","wednesday","thursday","friday","saturday" ]
+        days_pos = int(requested_date.strftime("%w"))
+        current_day = days[days_pos]
+        params = { current_day : True }
+        qset = qset.filter(**params)
+        start_date_q = Q(start_date=None) |  Q(start_date__lte=requested_date)
+        end_date_q= Q(end_date=None) |  Q(end_date__gte=requested_date)
+        qset = qset.filter (start_date_q | end_date_q)
+
+        #considering calendar dates (service_dates)
+        valid_dates = ServiceDate.objects.filter(date=requested_date, exception_type=1)
+        services_for_valid = valid_dates.values_list('service', flat=True)
+        qset = qset.filter(pk__in=services_for_valid)
+
+        invalid_dates = ServiceDate.objects.filter(date=requested_date, exception_type=2)
+        services_for_invalid = invalid_dates.values_list('service', flat=True)
+        qset = qset.exclude(pk__in=services_for_invalid)
+
+        return qset
