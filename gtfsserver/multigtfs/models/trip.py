@@ -28,7 +28,7 @@ class Trip(Base):
     This implements trips.txt in the GTFS feed
     """
 
-    route = models.ForeignKey('Route')
+    route = models.ForeignKey('Route', related_name="trips")
     service = models.ForeignKey('Service', null=True, blank=True)
     trip_id = models.CharField(
         max_length=255, db_index=True,
