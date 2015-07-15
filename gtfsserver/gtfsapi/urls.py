@@ -2,8 +2,11 @@ from django.conf.urls import include, url
 #from rest_framework.routers import SimpleRouter
 from rest_framework_nested import routers
 
-from .views import ( FeedViewSet, FeedGeoViewSet, AgencyViewSet, FeedAgencyViewSet,
-                    RouteViewSet, GeoRouteViewSet, StopViewSet, GeoStopViewSet, ServiceViewSet,
+from .views import ( FeedViewSet, FeedGeoViewSet,
+                    AgencyViewSet, FeedAgencyViewSet,
+                    FeedRouteViewSet, FeedGeoRouteViewSet,
+                    FeedStopViewSet, FeedGeoStopViewSet,
+                    FeedServiceViewSet,
                     FeedServiceDateViewSet, ServiceServiceDateViewSet,
                     FeedRouteTripViewSet, RouteTripViewSet  )
 
@@ -17,11 +20,11 @@ router.register(r'agencies', AgencyViewSet)
 feeds_router = routers.NestedSimpleRouter(router, r'feeds', lookup='feed')
 
 feeds_router.register('agencies', FeedAgencyViewSet)
-feeds_router.register('routes.geojson', GeoRouteViewSet)
-feeds_router.register('routes', RouteViewSet)
-feeds_router.register('stops.geojson', GeoStopViewSet)
-feeds_router.register('stops', StopViewSet)
-feeds_router.register('services', ServiceViewSet)
+feeds_router.register('routes.geojson', FeedGeoRouteViewSet)
+feeds_router.register('routes', FeedRouteViewSet)
+feeds_router.register('stops.geojson', FeedGeoStopViewSet)
+feeds_router.register('stops', FeedStopViewSet)
+feeds_router.register('services', FeedServiceViewSet)
 feeds_router.register('service_dates', FeedServiceDateViewSet)
 feeds_router.register('trips', FeedRouteTripViewSet)
 

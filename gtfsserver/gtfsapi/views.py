@@ -83,40 +83,28 @@ class InBBoxFilterBBox(InBBoxFilter):
 
 
 class FeedViewSet(ReadOnlyModelViewSet):
+    """
+    Viewset for Feed model
+    """
     serializer_class = FeedSerializer
     queryset = Feed.objects.all()
 
 
-class FeedGeoViewSet(ReadOnlyModelViewSet):
+class FeedGeoViewSet(FeedViewSet):
+    """
+    Viewset for Feed model - extended info (changes serializer)
+    """
     serializer_class = FeedInfoSerializer
-    queryset = Feed.objects.all()
-
-
-class FeedNestedCachedViewSet(ReadOnlyModelViewSet):
-
-    @cache_response(cache="filebased", key_func=CustomListKeyConstructor())
-    def list(self, request, feed_pk=None):
-        queryset= self.queryset.filter(feed=feed_pk)
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    @cache_response(cache="filebased", key_func=CustomObjectKeyConstructor())
-    def retrieve(self, request, pk=None, feed_pk=None):
-        instance = self.queryset.get(pk=pk, feed_pk=feed_pk)
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
 
 
 class FeedNestedViewSet(ReadOnlyModelViewSet):
+    """
+    Base class for viewset nested into feed.
+    """
 
     def list(self, request, *args, **kwargs):
-        queryset= self.queryset.filter(feed=kwargs['feed_pk'])
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = queryset.filter(feed=kwargs['feed_pk'])
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -133,27 +121,44 @@ class FeedNestedViewSet(ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
+class FeedNestedCachedViewSet(FeedNestedViewSet):
+    """
+    Base class for viewset nested into feed.
+    Filebased cached version
+    """
+
+    @cache_response(cache="filebased", key_func=CustomListKeyConstructor())
+    def list(self, request, feed_pk=None):
+        return super(FeedNestedCachedViewSet, self).list(request, feed__pk)
+
+    @cache_response(cache="filebased", key_func=CustomObjectKeyConstructor())
+    def retrieve(self, request, *args, **kwargs):
+        return super(FeedNestedCachedViewSet, self).retrieve(request, *args, **kwargs)
+
+
+
 
 class AgencyViewSet(ReadOnlyModelViewSet):
+    """
+    Viewset for agencies (global)
+    """
     serializer_class = AgencySerializer
     queryset = Agency.objects.all()
 
 
 class FeedAgencyViewSet(FeedNestedViewSet):
+    """
+    Viewset for agencies (nested into feed - lookup by agency_id)
+    """
     lookup_field = "agency_id"
     serializer_class = AgencySerializer
     queryset = Agency.objects.all()
 
 
-class GeoRouteViewSet(FeedNestedCachedViewSet):
-    serializer_class = GeoRouteSerializer
-    queryset = Route.objects.all()
-    pagination_class = None
-    filter_backends = (InBBoxFilterBBox, )
-    bbox_filter_field = 'geometry'
-
-
-class RouteViewSet(FeedNestedViewSet):
+class FeedRouteViewSet(FeedNestedViewSet):
+    """
+    Viewset for Route (nested in feed - lookup by route_id)
+    """
     lookup_field = "route_id"
     serializer_class = RouteSerializer
     queryset = Route.objects.all()
@@ -167,21 +172,44 @@ class RouteViewSet(FeedNestedViewSet):
             out_types[x] = avail_types[x]
         return Response(out_types)
 
+class FeedGeoRouteViewSet(FeedNestedCachedViewSet):
+    """
+    GeoViewset for Route (nested in feed - lookup by route_id)
+    """
+    lookup_field = "route_id"
+    serializer_class = GeoRouteSerializer
+    queryset = Route.objects.all()
+    pagination_class = None
+    filter_backends = (InBBoxFilterBBox, )
+    bbox_filter_field = 'geometry'
 
-class GeoStopViewSet(FeedNestedCachedViewSet):
+
+class FeedStopViewSet(FeedNestedViewSet):
+    """
+    Viewset for Stop (nested in feed - lookup by stop_id)
+    """
+    lookup_field = "stop_id"
+    serializer_class = StopSerializer
+    queryset = Stop.objects.all()
+
+
+
+class FeedGeoStopViewSet(FeedNestedCachedViewSet):
+    """
+    GeoViewset for Stop (nested in feed - lookup by stop_id)
+    """
     serializer_class = GeoStopSerializer
     queryset = Stop.objects.all()
     pagination_class = None
     filter_backends = (InBBoxFilterBBox, )
     bbox_filter_field = 'point'
 
-class StopViewSet(FeedNestedViewSet):
-    lookup_field = "stop_id"
-    serializer_class = StopSerializer
-    queryset = Stop.objects.all()
 
 
-class ServiceViewSet(FeedNestedViewSet):
+class FeedServiceViewSet(FeedNestedViewSet):
+    """
+    Viewset for Service (nested in feed - lookup by service_id)
+    """
     lookup_field = "service_id"
     serializer_class = ServiceSerializer
     queryset = Service.objects.all()
@@ -195,10 +223,15 @@ class ServiceViewSet(FeedNestedViewSet):
 
 
 
-class ServiceFeedNestedViewSet(ReadOnlyModelViewSet):
+class FeedThroughServiceNestedViewSet(ReadOnlyModelViewSet):
+    """
+    Base class for viewset nested into feed, but related to feed via Service.
+    Lookup is done by service__feed__pk and "lookup_field" (default=pk)
+    """
 
     def list(self, request, feed_pk=None):
-        queryset= self.queryset.filter(service__feed=feed_pk)
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = queryset.filter(service__feed=feed_pk)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -207,16 +240,26 @@ class ServiceFeedNestedViewSet(ReadOnlyModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None, feed_pk=None):
-        instance = self.queryset.get(pk=pk, service__feed__pk=feed_pk)
+    #def retrieve(self, request, pk=None, feed_pk=None):
+    def retrieve(self, request, *args, **kwargs):
+        lookup_field = self.lookup_field or 'pk'
+        filter_params = {
+            lookup_field : kwargs[lookup_field],
+            "service__feed__pk" :  kwargs['feed_pk']
+        }
+        instance = self.queryset.get(**filter_params)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
 
-class ServiceNestedViewSet(ReadOnlyModelViewSet):
-
+class FeedServiceNestedViewSet(ReadOnlyModelViewSet):
+    """
+    Base class for viewset nested into service nested into feed.
+    Lookup is done by feed_pk, service_id and "lookup_field" (default=pk)
+    """
     def list(self, request, feed_pk=None, service_service_id=None):
-        queryset= self.queryset.filter(service__feed__pk=feed_pk, service__service_id = service_service_id)
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = queryset.filter(service__feed__pk=feed_pk, service__service_id = service_service_id)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -274,11 +317,11 @@ class RouteFeedNestedViewSet(ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
-class ServiceServiceDateViewSet(ServiceNestedViewSet):
+class ServiceServiceDateViewSet(FeedServiceNestedViewSet):
     serializer_class = ServiceDateSerializer
     queryset = ServiceDate.objects.all()
 
-class FeedServiceDateViewSet(ServiceFeedNestedViewSet):
+class FeedServiceDateViewSet(FeedThroughServiceNestedViewSet):
     serializer_class = ServiceDateSerializer
     queryset = ServiceDate.objects.all()
 
