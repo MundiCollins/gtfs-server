@@ -33,6 +33,9 @@ class FeedRouteViewSet(FeedNestedViewSet):
 
     @list_route()
     def _rtype(self, request, feed_pk=None):
+        """
+        Get an object with the occurring values/descriptions of "rtype" (route type) field.
+        """
         types = self.queryset.filter(feed__pk=feed_pk).values_list('rtype', flat=True).distinct()
         avail_types = dict(Route._meta.get_field('rtype').choices)
         out_types = {}
@@ -67,6 +70,7 @@ class FeedGeoStopViewSet(FeedNestedCachedViewSet):
     """
     GeoViewset for Stop (nested in feed - lookup by stop_id)
     """
+    lookup_field = "stop_id"
     serializer_class = GeoStopSerializer
     queryset = Stop.objects.all()
     pagination_class = None
