@@ -16,7 +16,7 @@ router.register(r'agencies', AgencyViewSet)
 
 feeds_router = routers.NestedSimpleRouter(router, r'feeds', lookup='feed')
 
-feeds_router.register('agencies', AgencyViewSet)
+feeds_router.register('agencies', FeedAgencyViewSet)
 feeds_router.register('routes.geojson', GeoRouteViewSet)
 feeds_router.register('routes', RouteViewSet)
 feeds_router.register('stops.geojson', GeoStopViewSet)

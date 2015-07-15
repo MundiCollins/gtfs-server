@@ -115,8 +115,8 @@ class FeedNestedCachedViewSet(ReadOnlyModelViewSet):
 
 class FeedNestedViewSet(ReadOnlyModelViewSet):
 
-    def list(self, request, feed_pk=None):
-        queryset= self.queryset.filter(feed=feed_pk)
+    def list(self, request, *args, **kwargs):
+        queryset= self.queryset.filter(feed=kwargs['feed_pk'])
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -125,10 +125,13 @@ class FeedNestedViewSet(ReadOnlyModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None, feed_pk=None):
-        instance = self.queryset.get(pk=pk, feed__pk=feed_pk)
+    def retrieve(self, request, *args, **kwargs):
+        lookup_field = self.lookup_field or 'pk'
+        filter_params = { lookup_field : kwargs[lookup_field], "feed__pk" : kwargs['feed_pk'] }
+        instance = self.queryset.get(**filter_params)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
 
 
 class AgencyViewSet(ReadOnlyModelViewSet):
@@ -137,6 +140,7 @@ class AgencyViewSet(ReadOnlyModelViewSet):
 
 
 class FeedAgencyViewSet(FeedNestedViewSet):
+    lookup_field = "agency_id"
     serializer_class = AgencySerializer
     queryset = Agency.objects.all()
 
@@ -150,6 +154,7 @@ class GeoRouteViewSet(FeedNestedCachedViewSet):
 
 
 class RouteViewSet(FeedNestedViewSet):
+    lookup_field = "route_id"
     serializer_class = RouteSerializer
     queryset = Route.objects.all()
 
@@ -161,14 +166,7 @@ class RouteViewSet(FeedNestedViewSet):
         for x in types:
             out_types[x] = avail_types[x]
         return Response(out_types)
-    """
-    def get_serializer_class(self):
-        if self.action == 'list':
-            return RouteSerializer
-        if self.action == 'retrieve':
-            return RouteWithTripsSerializer
-        return serializers.Default
-    """
+
 
 class GeoStopViewSet(FeedNestedCachedViewSet):
     serializer_class = GeoStopSerializer
@@ -178,11 +176,13 @@ class GeoStopViewSet(FeedNestedCachedViewSet):
     bbox_filter_field = 'point'
 
 class StopViewSet(FeedNestedViewSet):
+    lookup_field = "stop_id"
     serializer_class = StopSerializer
     queryset = Stop.objects.all()
 
 
 class ServiceViewSet(FeedNestedViewSet):
+    lookup_field = "service_id"
     serializer_class = ServiceSerializer
     queryset = Service.objects.all()
 
@@ -215,8 +215,8 @@ class ServiceFeedNestedViewSet(ReadOnlyModelViewSet):
 
 class ServiceNestedViewSet(ReadOnlyModelViewSet):
 
-    def list(self, request, feed_pk=None, service_pk=None):
-        queryset= self.queryset.filter(service=service_pk)
+    def list(self, request, feed_pk=None, service_service_id=None):
+        queryset= self.queryset.filter(service__feed__pk=feed_pk, service__service_id = service_service_id)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -225,15 +225,19 @@ class ServiceNestedViewSet(ReadOnlyModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None, feed_pk=None, service_pk=None):
-        instance = self.queryset.get(pk=pk, service__pk=service_pk)
+    def retrieve(self, request, *args, **kwargs):
+        lookup_field = self.lookup_field or 'pk'
+        filter_params = {
+            lookup_field : kwargs[lookup_field],
+            "service__feed__pk" :  kwargs['feed_pk'],
+            "service__service_id" : kwargs['service_service_id']
+        }
+        instance = self.queryset.get(**filter_params)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
 
 class RouteNestedViewSet(ReadOnlyModelViewSet):
-
-
 
 
     def list(self, request, feed_pk=None, route_pk=None):
