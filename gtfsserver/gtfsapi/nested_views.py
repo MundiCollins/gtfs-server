@@ -8,7 +8,7 @@ from .serializers import  (
 
 from .base_views import  (FeedNestedViewSet, FeedNestedCachedViewSet,
     FeedServiceNestedViewSet, FeedThroughServiceNestedViewSet,
-    RouteNestedViewSet,RouteFeedNestedViewSet )
+    FeedRouteNestedViewSet, FeedThroughRouteNestedViewSet )
 
 class InBBoxFilterBBox(InBBoxFilter):
     bbox_param = "bbox"
@@ -92,18 +92,36 @@ class FeedServiceViewSet(FeedNestedViewSet):
 
 
 class ServiceServiceDateViewSet(FeedServiceNestedViewSet):
+    """
+    Viewset for getting service dates nested into services
+    lookup is done by feed_pk, service_id (and id for getting single object)
+    """
     serializer_class = ServiceDateSerializer
     queryset = ServiceDate.objects.all()
 
 class FeedServiceDateViewSet(FeedThroughServiceNestedViewSet):
+    """
+    Viewset for getting ServiceDate directly from feed
+    lookup is done by feed_id (and id for getting single object)
+    """
     serializer_class = ServiceDateSerializer
     queryset = ServiceDate.objects.all()
 
 
-class RouteTripViewSet(RouteNestedViewSet):
+class RouteTripViewSet(FeedRouteNestedViewSet):
+    """
+    Viewset for Trip nested into Route nested into Feed
+    lookup by feed_id, route_id, trip_id
+    """
+    lookup_field = "trip_id"
     serializer_class = TripSerializer
     queryset = Trip.objects.all()
 
-class FeedRouteTripViewSet(RouteFeedNestedViewSet):
+class FeedRouteTripViewSet(FeedThroughRouteNestedViewSet):
+    """
+    Viewset for Trip nested into  Feed
+    lookup by feed_id, trip_id
+    """
+    lookup_field = "trip_id"
     serializer_class = TripSerializer
     queryset = Trip.objects.all()

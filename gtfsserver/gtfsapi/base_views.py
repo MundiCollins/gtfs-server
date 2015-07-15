@@ -111,7 +111,7 @@ class FeedThroughServiceNestedViewSet(ReadOnlyModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    #def retrieve(self, request, pk=None, feed_pk=None):
+
     def retrieve(self, request, *args, **kwargs):
         lookup_field = self.lookup_field or 'pk'
         filter_params = {
@@ -121,6 +121,7 @@ class FeedThroughServiceNestedViewSet(ReadOnlyModelViewSet):
         instance = self.queryset.get(**filter_params)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
 
 
 class FeedServiceNestedViewSet(ReadOnlyModelViewSet):
@@ -151,11 +152,15 @@ class FeedServiceNestedViewSet(ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
-class RouteNestedViewSet(ReadOnlyModelViewSet):
 
+class FeedRouteNestedViewSet(ReadOnlyModelViewSet):
+    """
+    Base class for viewset nested into route nested into feed
+    """
 
-    def list(self, request, feed_pk=None, route_pk=None):
-        queryset= self.queryset.filter(route=route_pk)
+    def list(self, request, feed_pk=None, route_route_id=None):
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = queryset.filter(route__route_id=route_route_id)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -164,16 +169,24 @@ class RouteNestedViewSet(ReadOnlyModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None, feed_pk=None, route_pk=None):
-        instance = self.queryset.get(pk=pk, route__pk=service_pk)
+    def retrieve(self, request, *args, **kwargs):
+        lookup_field = self.lookup_field or 'pk'
+        filter_params = {
+            lookup_field : kwargs[lookup_field],
+            "route__feed__pk" :  kwargs['feed_pk'],
+            "route__route_id" : kwargs['route_route_id']
+        }
+        instance = self.queryset.get(**filter_params)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
 
-class RouteFeedNestedViewSet(ReadOnlyModelViewSet):
+
+class FeedThroughRouteNestedViewSet(ReadOnlyModelViewSet):
 
     def list(self, request, feed_pk=None):
-        queryset= self.queryset.filter(route__feed=feed_pk)
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = queryset.filter(route__feed=feed_pk)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -182,7 +195,13 @@ class RouteFeedNestedViewSet(ReadOnlyModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None, feed_pk=None):
-        instance = self.queryset.get(pk=pk, route__feed__pk=feed_pk)
+
+    def retrieve(self, request, *args, **kwargs):
+        lookup_field = self.lookup_field or 'pk'
+        filter_params = {
+            lookup_field : kwargs[lookup_field],
+            "route__feed__pk" :  kwargs['feed_pk']
+        }
+        instance = self.queryset.get(**filter_params)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
