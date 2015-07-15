@@ -5,10 +5,12 @@ from .serializers import  (
     AgencySerializer, RouteSerializer, GeoRouteSerializer, ServiceSerializer,
     TripSerializer, StopSerializer, GeoStopSerializer,
     ServiceDateSerializer, ServiceWithDatesSerializer )
-
-from .base_views import  (FeedNestedViewSet, FeedNestedCachedViewSet,
+from .base_views import (
+    FeedNestedViewSet, FeedNestedCachedViewSet,
     FeedServiceNestedViewSet, FeedThroughServiceNestedViewSet,
     FeedRouteNestedViewSet, FeedThroughRouteNestedViewSet )
+
+
 
 class InBBoxFilterBBox(InBBoxFilter):
     bbox_param = "bbox"
@@ -65,7 +67,6 @@ class FeedStopViewSet(FeedNestedViewSet):
     queryset = Stop.objects.all()
 
 
-
 class FeedGeoStopViewSet(FeedNestedCachedViewSet):
     """
     GeoViewset for Stop (nested in feed - lookup by stop_id)
@@ -76,7 +77,6 @@ class FeedGeoStopViewSet(FeedNestedCachedViewSet):
     pagination_class = None
     filter_backends = (InBBoxFilterBBox, )
     bbox_filter_field = 'point'
-
 
 
 class FeedServiceViewSet(FeedNestedViewSet):
@@ -103,6 +103,7 @@ class ServiceServiceDateViewSet(FeedServiceNestedViewSet):
     serializer_class = ServiceDateSerializer
     queryset = ServiceDate.objects.all()
 
+
 class FeedServiceDateViewSet(FeedThroughServiceNestedViewSet):
     """
     Viewset for getting ServiceDate directly from feed
@@ -120,6 +121,7 @@ class RouteTripViewSet(FeedRouteNestedViewSet):
     lookup_field = "trip_id"
     serializer_class = TripSerializer
     queryset = Trip.objects.all()
+
 
 class FeedRouteTripViewSet(FeedThroughRouteNestedViewSet):
     """
