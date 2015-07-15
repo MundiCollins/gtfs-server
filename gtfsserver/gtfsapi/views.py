@@ -20,8 +20,6 @@ from .serializers import ( AgencySerializer,
 
 
 
-
-
 class FeedViewSet(ReadOnlyModelViewSet):
     """
     Viewset for Feed model
@@ -37,10 +35,49 @@ class FeedGeoViewSet(FeedViewSet):
     serializer_class = FeedInfoSerializer
 
 
-
 class AgencyViewSet(ReadOnlyModelViewSet):
     """
     Viewset for agencies (global)
     """
     serializer_class = AgencySerializer
     queryset = Agency.objects.all()
+
+
+class ServiceViewSet(ReadOnlyModelViewSet):
+    """
+    Viewset for Service (global)
+    """
+    serializer_class = ServiceSerializer
+    queryset = Service.objects.all()
+
+
+class RouteViewSet(ReadOnlyModelViewSet):
+    """
+    Viewset for Route (global)
+    """
+    serializer_class = RouteSerializer
+    queryset = Route.objects.all()
+
+
+class StopViewSet(ReadOnlyModelViewSet):
+    """
+    Viewset for Route (global)
+    """
+    serializer_class = StopSerializer
+    queryset = Stop.objects.all()
+
+
+class TripViewSet(ReadOnlyModelViewSet):
+    """
+    Viewset for Route (global)
+    """
+    serializer_class = TripSerializer
+    queryset = Trip.objects.all()
+
+
+class ServiceDateViewSet(ReadOnlyModelViewSet):
+    """
+    Viewset for Route (global)
+    """
+    serializer_class = ServiceDateSerializer
+    queryset = ServiceDate.objects.all()
