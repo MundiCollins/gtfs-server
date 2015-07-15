@@ -9,14 +9,15 @@ from rest_framework.views import APIView
 from django.db.models import Q
 
 from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip
-from .serializers import ( AgencySerializer,
-                            GeoRouteSerializer, RouteSerializer, RouteWithTripsSerializer,
-                            GeoStopSerializer, StopSerializer, StopSerializerWithDistance,
-                            GeoStopSerializerWithDistance,
-                            FeedSerializer,
-                            FeedInfoSerializer, ServiceSerializer, ServiceWithDatesSerializer,
-                            ServiceDateSerializer,
-                            TripSerializer )
+from .serializers import (
+    AgencySerializer,
+    GeoRouteSerializer, RouteSerializer, RouteWithTripsSerializer,
+    GeoStopSerializer, StopSerializer, StopSerializerWithDistance,
+    GeoStopSerializerWithDistance,
+    FeedSerializer,
+    FeedInfoSerializer, ServiceSerializer, ServiceWithDatesSerializer,
+    ServiceDateSerializer,
+    TripSerializer )
 
 
 
@@ -37,7 +38,7 @@ class FeedGeoViewSet(FeedViewSet):
 
 class AgencyViewSet(ReadOnlyModelViewSet):
     """
-    Viewset for agencies (global)
+    Viewset for Agency (global)
     """
     serializer_class = AgencySerializer
     queryset = Agency.objects.all()
@@ -61,7 +62,7 @@ class RouteViewSet(ReadOnlyModelViewSet):
 
 class StopViewSet(ReadOnlyModelViewSet):
     """
-    Viewset for Route (global)
+    Viewset for Stop (global)
     """
     serializer_class = StopSerializer
     queryset = Stop.objects.all()
@@ -69,7 +70,7 @@ class StopViewSet(ReadOnlyModelViewSet):
 
 class TripViewSet(ReadOnlyModelViewSet):
     """
-    Viewset for Route (global)
+    Viewset for Trip (global)
     """
     serializer_class = TripSerializer
     queryset = Trip.objects.all()
@@ -77,7 +78,7 @@ class TripViewSet(ReadOnlyModelViewSet):
 
 class ServiceDateViewSet(ReadOnlyModelViewSet):
     """
-    Viewset for Route (global)
+    Viewset for ServiceDate (global)
     """
     serializer_class = ServiceDateSerializer
     queryset = ServiceDate.objects.all()
