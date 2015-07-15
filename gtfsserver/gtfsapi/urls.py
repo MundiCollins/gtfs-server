@@ -2,15 +2,14 @@ from django.conf.urls import include, url
 #from rest_framework.routers import SimpleRouter
 from rest_framework_nested import routers
 
-from .views import ( FeedViewSet, FeedGeoViewSet,
-                    AgencyViewSet, FeedAgencyViewSet,
-                    FeedRouteViewSet, FeedGeoRouteViewSet,
-                    FeedStopViewSet, FeedGeoStopViewSet,
-                    FeedServiceViewSet,
-                    FeedServiceDateViewSet, ServiceServiceDateViewSet,
-                    FeedRouteTripViewSet, RouteTripViewSet  )
+from .views import ( FeedViewSet, FeedGeoViewSet, AgencyViewSet )
+from .nested_views import (
+    FeedAgencyViewSet, FeedRouteViewSet, FeedGeoRouteViewSet,
+    FeedStopViewSet, FeedGeoStopViewSet,
+    FeedServiceViewSet, FeedServiceDateViewSet, ServiceServiceDateViewSet,
+    FeedRouteTripViewSet, RouteTripViewSet  )
 
-from .views import StopsNearView, GeoStopsNearView, ServicesActiveView, TripsActiveView
+from .list_views import StopsNearView, GeoStopsNearView, ServicesActiveView, TripsActiveView
 
 router = routers.SimpleRouter()
 router.register(r'feeds', FeedViewSet)
