@@ -141,18 +141,18 @@ class FeedStopTimeViewSet(FeedThroughStopNestedViewSet):
     Viewset for Stop (nested in feed - lookup by stop_id)
     """
     serializer_class = StopTimeSerializer
-    queryset = StopTime.objects.all()
+    queryset = StopTime.objects.all().order_by('trip', 'stop_sequence')
 
 class FeedStopStopTimeViewSet(FeedStopNestedViewSet):
     """
     Viewset for StopTime (nested in feed and stop, lookup by stop_id)
     """
     serializer_class = StopTimeSerializer
-    queryset = StopTime.objects.all()
+    queryset = StopTime.objects.all().order_by('stop_sequence')
 
 class FeedTripStopTimeViewSet(FeedTripNestedViewSet):
     """
     Viewset for StopTime (nested in feed and trip, lookup by trip_id)
     """
     serializer_class = StopTimeSerializer
-    queryset = StopTime.objects.all()
+    queryset = StopTime.objects.all().order_by('stop_sequence')

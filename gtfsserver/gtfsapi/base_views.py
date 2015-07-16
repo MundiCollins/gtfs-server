@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import detail_route, list_route
 from rest_framework_extensions.cache.decorators import cache_response
 
-from multigtfs.models import Feed
+from multigtfs.models import Feed, Trip
 from rest_framework import generics
 
 from .cache_helpers import CustomObjectKeyConstructor, CustomListKeyConstructor
@@ -179,9 +179,12 @@ class FeedThroughStopNestedViewSet(FeedThroughStopNestedListAPIView, FeedThrough
 class FeedTripNestedMixin(object):
     def get_queryset(self):
         queryset = super(FeedTripNestedMixin, self).get_queryset()
+        related_trips = Trip.objects.filter(
+            route__feed__pk=self.kwargs['feed_pk'],
+            trip_id = self.kwargs['trip_trip_id']
+        )
         queryset = queryset.filter(
-            trip__feed__pk=self.kwargs['feed_pk'],
-            trip__trip_id = self.kwargs['trip_trip_id']
+            trip__in = related_trips
         )
         return queryset
 
