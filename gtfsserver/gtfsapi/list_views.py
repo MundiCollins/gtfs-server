@@ -177,7 +177,13 @@ class StopTimesActiveView(generics.ListAPIView):
         return active_stop_times
 
 class FeedStopStopTimesActiveView(StopTimesActiveView, FeedStopNestedListAPIView):
+    """
+    Active stop times for a feed and a stop (lookup by stop_id)
+    """
     pass
 
 class FeedStopTimesActiveView(StopTimesActiveView, FeedThroughStopNestedListAPIView):
+    """
+    Active stop times for a feed.
+    """
     pass
