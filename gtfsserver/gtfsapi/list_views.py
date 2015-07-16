@@ -225,8 +225,8 @@ class TrajectoriesView(APIView):
 
         stop_times = StopTime.objects.filter(
             trip__in=active_trips,
-            stop__point__within=geom).order_by('stop_sequence')
-            
+            stop__point__within=geom).order_by('stop_sequence').select_related()
+
         for t in stop_times:
             if not in_hour(t.arrival_time.seconds):
                 continue
