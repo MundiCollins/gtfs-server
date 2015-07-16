@@ -1,15 +1,16 @@
 import datetime
 
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, Polygon
 from django.contrib.gis.measure import D
 
 from rest_framework import filters
 from rest_framework import generics
 from rest_framework.viewsets import GenericViewSet
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
 import django_filters
 
-from multigtfs.models import Stop, Service, Trip, StopTime
+from multigtfs.models import Stop, Service, Trip, StopTime, Route
 
 from .helpers import active_services_from_date
 from .serializers import (
@@ -177,7 +178,65 @@ class StopTimesActiveView(generics.ListAPIView):
         return active_stop_times
 
 class FeedStopStopTimesActiveView(StopTimesActiveView, FeedStopNestedListAPIView):
+    """
+    Active stop times for a feed and a stop (lookup by stop_id)
+    """
     pass
 
 class FeedStopTimesActiveView(StopTimesActiveView, FeedThroughStopNestedListAPIView):
+    """
+    Active stop times for a feed.
+    """
     pass
+
+
+
+
+class TrajectoriesView(APIView):
+    def get(self, request, year=None, month=None, day=None, hour=None, bbox=None):
+        out = {}
+        today = datetime.date.today()
+        bbox=[float(x) for x in bbox.split(",")]
+        if year:
+
+            year, month, day, hour = int(year), int(month), int(day), int(hour)
+            requested_datetime = datetime.datetime(year, month, day, hour)
+            requested_date = datetime.date(year, month, hour)
+        else:
+            if hour:
+                hour = int(hour)
+                requested_datetime = datetime.datetime(today.year, today.month, today.day, hour)
+            else:
+                now = datetime.datetime.now()
+                requested_datetime = datetime.datetime(now.year, now.month, now.day, now.hour)
+            requested_date = today
+
+        end_datetime = requested_datetime + datetime.timedelta(hours=1)
+
+
+        geom = Polygon.from_bbox(bbox)
+        matching_routes = Route.objects.filter(geometry__within=geom)
+        feeds = matching_routes.values_list('feed', flat=True).distinct()
+        services = active_services_from_date(requested_date, Service.objects.filter(feed__in=feeds))
+        active_trips = Trip.objects.filter(route__in=matching_routes, service__in=services)
+
+        def in_hour(seconds):
+            return end_datetime.hour * 60 * 60 < seconds and seconds > requested_datetime.hour * 60 * 60
+
+        stop_times = StopTime.objects.filter(
+            trip__in=active_trips,
+            stop__point__within=geom).order_by('stop_sequence')
+            
+        for t in stop_times:
+            if not in_hour(t.arrival_time.seconds):
+                continue
+            if t.trip.trip_id not in out:
+                out[t.trip.trip_id] = {
+                    "route" : t.trip.route.route_id,
+                    "feed" : t.trip.route.feed.pk,
+                    "positions" : {}
+                }
+
+            out[t.trip.trip_id]["positions"][t.arrival_time.seconds] = t.stop.point.get_coords()
+
+        return Response(out)
