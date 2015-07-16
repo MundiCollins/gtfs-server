@@ -17,7 +17,8 @@ from .list_views import (
     ServicesActiveView, FeedServiceActiveView,
     TripActiveView, FeedTripActiveView, StopsActiveView,
     FeedStopActiveView,
-    FeedStopTimesActiveView, FeedStopStopTimesActiveView )
+    FeedStopTimesActiveView, FeedStopStopTimesActiveView ,
+    TrajectoriesView )
 
 router = routers.SimpleRouter()
 router.register(r'feeds', FeedViewSet)
@@ -87,6 +88,12 @@ urls = [
 
     url(u'^feeds/(?P<feed_pk>[^/]+)/stop-times-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', FeedStopTimesActiveView.as_view(), name="feed-stop-times-active"),
     url(u'^feeds/(?P<feed_pk>[^/]+)/stop-times-active-today/$', FeedStopTimesActiveView.as_view(), name="feed-stop-times-active-today"),
+
+    url(u'^trajectories/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2}):(?P<hour>\d+)/(?P<bbox>[^/]+)/$', TrajectoriesView.as_view(), name="trajectories"),
+    url(u'^trajectories-today/(?P<hour>\d+)/(?P<bbox>[^/]+)/$', TrajectoriesView.as_view(), name="trajectories"),
+    url(u'^trajectories-now/(?P<bbox>[^/]+)/$', TrajectoriesView.as_view(), name="trajectories"),
+
+
 
 ]
 urlpatterns = router.urls + feeds_router.urls + services_router.urls + routes_router.urls + stops_router.urls +  trips_router.urls + urls
