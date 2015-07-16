@@ -46,6 +46,7 @@ class GeoRouteSerializer(GeoFeatureModelSerializer):
         #auto_bbox = True
 
 
+from rest_framework.serializers import CharField
 class StopSerializer(ModelSerializer):
     class Meta:
         model = Stop
@@ -93,5 +94,22 @@ class ServiceWithDatesSerializer(ServiceSerializer):
     service_dates = ServiceDateSerializer(many=True, read_only=True)
 
 class StopTimeSerializer(ModelSerializer):
+    trip_id = SerializerMethodField(read_only=True)
+    stop_id = SerializerMethodField(read_only=True)
+    route_id = SerializerMethodField(read_only=True)
+    route = SerializerMethodField(read_only=True)
+
+    def get_trip_id(self, obj):
+        return obj.trip.trip_id
+
+    def get_stop_id(self, obj):
+        return obj.stop.stop_id
+
+    def get_route(self, obj):
+        return obj.trip.route.id
+
+    def get_route_id(self, obj):
+        return obj.trip.route.route_id
+
     class Meta:
         model = StopTime
