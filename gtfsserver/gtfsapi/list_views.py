@@ -57,8 +57,11 @@ class ServicesActiveView(generics.ListAPIView):
 
     def get_queryset(self):
         qset = super(ServicesActiveView, self).get_queryset()
-        year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
-        requested_date = datetime.date(year, month, day)
+        if year:
+            year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
+            requested_date = datetime.date(year, month, day)
+        else:
+            requested_date = datetime.date.today()
         qset = active_services_from_date(requested_date, qset)
         return qset
 
@@ -76,8 +79,12 @@ class TripActiveView(generics.ListAPIView):
 
     def get_queryset(self):
         qset = super(TripActiveView, self).get_queryset()
-        year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
-        requested_date = datetime.date(year, month, day)
+        year = self.kwargs.get('year', None)
+        if year:
+            year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
+            requested_date = datetime.date(year, month, day)
+        else:
+            requested_date = datetime.date.today()
         services = active_services_from_date(requested_date)
         active_trips = qset.filter(service__in=services)
         return active_trips

@@ -53,9 +53,14 @@ urls = [
     url(u'^feeds/(?P<feed_pk>[^/]+)/stops-near.geojson/(?P<x>\d+\.\d+)/(?P<y>\d+\.\d+)/$', FeedGeoStopsNearView.as_view(), name="geo-feed-stops-near"),
 
     url(u'^services-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', ServicesActiveView.as_view(), name="services-active"),
+    url(u'^services-active-today/$', ServicesActiveView.as_view(), name="services-active-today"),
     url(u'^feeds/(?P<feed_pk>[^/]+)/services-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', FeedServiceActiveView.as_view(), name="feed-services-active"),
-    url(u'^trips-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', TripActiveView.as_view(), name="services-active"),
+    url(u'^feeds/(?P<feed_pk>[^/]+)/services-active-today/$', FeedServiceActiveView.as_view(), name="feed-services-active-today"),
+
+    url(u'^trips-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', TripActiveView.as_view(), name="trips-active"),
+    url(u'^trips-active-today/$', TripActiveView.as_view(), name="trips-active-today"),
     url(u'^feeds/(?P<feed_pk>[^/]+)/trips-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', FeedTripActiveView.as_view(), name="feed-trips-active"),
+    url(u'^feeds/(?P<feed_pk>[^/]+)/trips-active-today/$', FeedTripActiveView.as_view(), name="feed-trips-active-today"),
 
 ]
 urlpatterns = router.urls + feeds_router.urls + services_router.urls + routes_router.urls + urls
