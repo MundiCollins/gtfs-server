@@ -66,6 +66,12 @@ class StopSerializerWithDistance(StopSerializer):
             return None
         return float(obj.distance.km)
 
+from rest_framework.serializers import ListField
+class StopWithTripsAndRoutesSerializer(StopSerializer):
+    pass
+    #trips = ListField(source="tr")
+
+
 class GeoStopSerializerWithDistance(GeoStopSerializer):
     distance = SerializerMethodField(required=False, read_only=True)
     def get_distance(self, obj):
