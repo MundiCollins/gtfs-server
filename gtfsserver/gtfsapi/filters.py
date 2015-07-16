@@ -1,5 +1,5 @@
 import django_filters
-from multigtfs.models import Trip, Service
+from multigtfs.models import Trip, Service, Stop
 
 class TripFilter(django_filters.FilterSet):
     feed = django_filters.CharFilter(name="service__feed")
@@ -21,3 +21,11 @@ class ServiceFilter(django_filters.FilterSet):
     class Meta:
         model = Service
         fields = ["id", "feed", "monday"]
+
+
+class StopFilter(django_filters.FilterSet):
+    """
+    """
+
+    class Meta:
+        model = Stop

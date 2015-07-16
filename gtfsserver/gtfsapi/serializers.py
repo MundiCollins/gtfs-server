@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer,SerializerMethodField, FloatField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
-from multigtfs.models import Feed, Agency, Route, Stop, Service, ServiceDate, Trip
+from multigtfs.models import Feed, Agency, Route, Stop, Service, ServiceDate, Trip, StopTime
 
 
 from django.contrib.gis.db.models.aggregates import Extent
@@ -66,6 +66,12 @@ class StopSerializerWithDistance(StopSerializer):
             return None
         return float(obj.distance.km)
 
+from rest_framework.serializers import ListField
+class StopWithTripsAndRoutesSerializer(StopSerializer):
+    pass
+    #trips = ListField(source="tr")
+
+
 class GeoStopSerializerWithDistance(GeoStopSerializer):
     distance = SerializerMethodField(required=False, read_only=True)
     def get_distance(self, obj):
@@ -85,3 +91,7 @@ class ServiceSerializer(ModelSerializer):
 
 class ServiceWithDatesSerializer(ServiceSerializer):
     service_dates = ServiceDateSerializer(many=True, read_only=True)
+
+class StopTimeSerializer(ModelSerializer):
+    class Meta:
+        model = StopTime

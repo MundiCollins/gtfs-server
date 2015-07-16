@@ -9,15 +9,15 @@ from rest_framework.viewsets import GenericViewSet
 
 import django_filters
 
-from multigtfs.models import Stop, Service, Trip
+from multigtfs.models import Stop, Service, Trip, StopTime
 
 from .helpers import active_services_from_date
 from .serializers import (
-    StopSerializerWithDistance, ServiceSerializer, TripSerializer,
+    StopSerializerWithDistance,StopWithTripsAndRoutesSerializer, ServiceSerializer, TripSerializer, StopSerializer,
     GeoStopSerializerWithDistance )
 from .base_views import FeedNestedListAPIView, FeedThroughServiceNestedListAPIView
 
-from .filters import TripFilter, ServiceFilter
+from .filters import TripFilter, ServiceFilter, StopFilter
 
 class StopsNearView(generics.ListAPIView):
     serializer_class = StopSerializerWithDistance
@@ -89,6 +89,42 @@ class TripActiveView(generics.ListAPIView):
         active_trips = qset.filter(service__in=services)
         return active_trips
 
-#todo: base class is wrong
 class FeedTripActiveView(FeedThroughServiceNestedListAPIView, TripActiveView):
+    pass
+
+
+class StopsActiveView(generics.ListAPIView):
+    """
+    Stops associated with Active Trips
+    """
+    serializer_class = StopSerializer
+    queryset = Stop.objects.all()
+    filter_backends = (filters.DjangoFilterBackend,)
+    #filter_class = StopFilter
+    #filter_fields = ('service__feed', )
+
+    def get_queryset(self):
+        qset = super(StopsActiveView, self).get_queryset()
+        year = self.kwargs.get('year', None)
+        if year:
+            year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
+            requested_date = datetime.date(year, month, day)
+        else:
+            requested_date = datetime.date.today()
+
+        services = active_services_from_date(requested_date)
+        active_trips = Trip.objects.filter(service__in=services)
+        route = self.request.query_params.get('route', None)
+        route_id = self.request.query_params.get('route_id', None)
+
+        if route:
+            active_trips = active_trips.filter(route=route)
+        if route_id:
+            active_trips = active_trips.filter(route__route_id=route_id)
+
+        active_stop_times_pks = StopTime.objects.filter(trip__in=active_trips).values_list('stop__pk', flat=True)
+        active_stops = qset.filter(pk__in=active_stop_times_pks).distinct()
+        return active_stops
+
+class FeedStopActiveView(FeedNestedListAPIView, StopsActiveView):
     pass

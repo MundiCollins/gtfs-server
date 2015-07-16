@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 
 from django.db.models import Q
 
-from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip
+from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip, StopTime
 from .serializers import (
     AgencySerializer,
     GeoRouteSerializer, RouteSerializer, RouteWithTripsSerializer,
@@ -17,7 +17,8 @@ from .serializers import (
     FeedSerializer,
     FeedInfoSerializer, ServiceSerializer, ServiceWithDatesSerializer,
     ServiceDateSerializer,
-    TripSerializer )
+    TripSerializer,
+    StopTimeSerializer )
 
 
 
@@ -82,3 +83,11 @@ class ServiceDateViewSet(ReadOnlyModelViewSet):
     """
     serializer_class = ServiceDateSerializer
     queryset = ServiceDate.objects.all()
+
+
+class StopTimeViewSet(ReadOnlyModelViewSet):
+    """
+    Viewset for StopTime (global)
+    """
+    serializer_class = StopTimeSerializer
+    queryset = StopTime.objects.all()

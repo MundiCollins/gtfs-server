@@ -100,7 +100,7 @@ class FeedRouteNestedMixin(object):
         queryset = super(FeedRouteNestedMixin, self).get_queryset()
         queryset = queryset.filter(
             route__feed__pk=self.kwargs['feed_pk'],
-            route__route_id = self.kwargs['service_route_id']
+            route__route_id = self.kwargs['route_route_id']
         )
         return queryset
 
@@ -131,4 +131,68 @@ class FeedThroughRouteNestesRetrieveAPIView(FeedThroughRouteNestedMixin, generic
     pass
 
 class FeedThroughRouteNestedViewSet(FeedThroughRouteNestedListAPIView, FeedThroughRouteNestesRetrieveAPIView, GenericViewSet):
+    pass
+
+
+class FeedStopNestedMixin(object):
+    def get_queryset(self):
+        queryset = super(FeedStopNestedMixin, self).get_queryset()
+        queryset = queryset.filter(
+            stop__feed__pk=self.kwargs['feed_pk'],
+            stop__stop_id = self.kwargs['stop_stop_id']
+        )
+        return queryset
+
+class FeedStopNestedListAPIView( FeedStopNestedMixin, generics.ListAPIView ):
+    pass
+
+class FeedStopNestedNestesRetrieveAPIView(FeedStopNestedMixin, generics.RetrieveAPIView):
+    pass
+
+class FeedStopNestedViewSet(FeedStopNestedListAPIView, FeedStopNestedNestesRetrieveAPIView, GenericViewSet):
+    """
+    Base class for viewset nested into stop nested into feed
+    """
+    pass
+
+
+
+
+
+class FeedThroughStopNestedMixin(object):
+    def get_queryset(self):
+        queryset = super(FeedThroughStopNestedMixin, self).get_queryset()
+        queryset = queryset.filter(stop__feed__pk=self.kwargs['feed_pk'])
+        return queryset
+
+class FeedThroughStopNestedListAPIView( FeedThroughStopNestedMixin, generics.ListAPIView ):
+    pass
+
+class FeedThroughStopNestedRetrieveAPIView(FeedThroughStopNestedMixin, generics.RetrieveAPIView):
+    pass
+
+class FeedThroughStopNestedViewSet(FeedThroughStopNestedListAPIView, FeedThroughStopNestedRetrieveAPIView, GenericViewSet):
+    pass
+
+
+
+class FeedTripNestedMixin(object):
+    def get_queryset(self):
+        queryset = super(FeedTripNestedMixin, self).get_queryset()
+        queryset = queryset.filter(
+            trip__feed__pk=self.kwargs['feed_pk'],
+            trip__trip_id = self.kwargs['trip_trip_id']
+        )
+        return queryset
+
+class FeedTripNestedListAPIView( FeedTripNestedMixin, generics.ListAPIView ):
+    pass
+
+class FeedTripNestedNestesRetrieveAPIView(FeedTripNestedMixin, generics.RetrieveAPIView):
+    pass
+
+class FeedTripNestedViewSet(FeedTripNestedListAPIView, FeedTripNestedNestesRetrieveAPIView, GenericViewSet):
+    """
+    Base class for viewset nested into stop nested into feed
+    """
     pass
