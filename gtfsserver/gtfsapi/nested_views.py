@@ -10,6 +10,7 @@ from .base_views import (
     FeedServiceNestedViewSet, FeedThroughServiceNestedViewSet,
     FeedRouteNestedViewSet, FeedThroughRouteNestedViewSet )
 
+from rest_framework.response import Response
 
 
 class InBBoxFilterBBox(InBBoxFilter):

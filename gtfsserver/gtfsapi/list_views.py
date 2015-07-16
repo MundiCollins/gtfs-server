@@ -5,6 +5,7 @@ from django.contrib.gis.measure import D
 
 from rest_framework import filters
 from rest_framework import generics
+from rest_framework.viewsets import GenericViewSet
 
 from multigtfs.models import Stop, Service, Trip
 
@@ -12,6 +13,7 @@ from .helpers import active_services_from_date
 from .serializers import (
     StopSerializerWithDistance, ServiceSerializer, TripSerializer,
     GeoStopSerializerWithDistance )
+from .base_views import FeedNestedListAPIView
 
 class StopsNearView(generics.ListAPIView):
     serializer_class = StopSerializerWithDistance
@@ -51,18 +53,23 @@ class ServicesActiveView(generics.ListAPIView):
         qset = active_services_from_date(requested_date, qset)
         return qset
 
+class FeedServiceActiveView(FeedNestedListAPIView, ServicesActiveView):
+    pass
 
 
-class TripsActiveView(generics.ListAPIView):
+class TripActiveView(generics.ListAPIView):
     serializer_class = TripSerializer
     queryset = Trip.objects.all()
     filter_backends = (filters.DjangoFilterBackend,)
     filter_fields = ('service__feed', )
 
     def get_queryset(self):
-        qset = super(TripsActiveView, self).get_queryset()
+        qset = super(TripActiveView, self).get_queryset()
         year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
         requested_date = datetime.date(year, month, day)
         services = active_services_from_date(requested_date)
         active_trips = qset.filter(service__in=services)
         return active_trips
+
+class FeedTripActiveView(FeedNestedListAPIView, TripActiveView):
+    pass
