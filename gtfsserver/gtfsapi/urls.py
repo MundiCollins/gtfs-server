@@ -4,12 +4,13 @@ from rest_framework_nested import routers
 
 from .views import (
     FeedViewSet, FeedGeoViewSet, AgencyViewSet, ServiceViewSet, RouteViewSet,
-    TripViewSet, StopViewSet, ServiceDateViewSet )
+    TripViewSet, StopViewSet, ServiceDateViewSet, StopTimeViewSet )
 from .nested_views import (
     FeedAgencyViewSet, FeedRouteViewSet, FeedGeoRouteViewSet,
     FeedStopViewSet, FeedGeoStopViewSet,
     FeedServiceViewSet, FeedServiceDateViewSet, ServiceServiceDateViewSet,
-    FeedRouteTripViewSet, RouteTripViewSet  )
+    FeedRouteTripViewSet, RouteTripViewSet,
+    FeedStopTimeViewSet, FeedStopStopTimeViewSet, FeedTripStopTimeViewSet  )
 
 from .list_views import (
     StopsNearView, FeedStopsNearView, GeoStopsNearView, FeedGeoStopsNearView,
@@ -22,6 +23,7 @@ router.register(r'feeds-info', FeedGeoViewSet)
 router.register(r'agencies', AgencyViewSet)
 router.register(r'routes', RouteViewSet)
 router.register(r'stops', StopViewSet)
+router.register(r'stop-times', StopTimeViewSet)
 router.register(r'services', ServiceViewSet)
 router.register(r'service-dates', ServiceDateViewSet)
 router.register(r'trips', TripViewSet)
@@ -33,6 +35,7 @@ feeds_router.register('routes', FeedRouteViewSet)
 feeds_router.register('routes.geojson', FeedGeoRouteViewSet)
 feeds_router.register('stops', FeedStopViewSet)
 feeds_router.register('stops.geojson', FeedGeoStopViewSet)
+feeds_router.register('stop-times', FeedStopTimeViewSet)
 feeds_router.register('services', FeedServiceViewSet)
 feeds_router.register('service-dates', FeedServiceDateViewSet)
 feeds_router.register('trips', FeedRouteTripViewSet)
@@ -43,6 +46,13 @@ services_router.register('service-dates', ServiceServiceDateViewSet)
 
 routes_router = routers.NestedSimpleRouter(feeds_router, r'routes', lookup='route')
 routes_router.register('trips', RouteTripViewSet)
+
+stops_router = routers.NestedSimpleRouter(feeds_router, r'stops', lookup='stop')
+stops_router.register('stop-times', FeedStopStopTimeViewSet)
+
+trips_router = routers.NestedSimpleRouter(feeds_router, r'trips', lookup='trip')
+trips_router.register('stop-times', FeedTripStopTimeViewSet)
+
 
 
 urls = [
@@ -63,4 +73,4 @@ urls = [
     url(u'^feeds/(?P<feed_pk>[^/]+)/trips-active-today/$', FeedTripActiveView.as_view(), name="feed-trips-active-today"),
 
 ]
-urlpatterns = router.urls + feeds_router.urls + services_router.urls + routes_router.urls + urls
+urlpatterns = router.urls + feeds_router.urls + services_router.urls + routes_router.urls + stops_router.urls +  trips_router.urls + urls

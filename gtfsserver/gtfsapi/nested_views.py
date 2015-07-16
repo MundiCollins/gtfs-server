@@ -1,14 +1,16 @@
 from rest_framework.decorators import detail_route, list_route
 from rest_framework_gis.filters import InBBoxFilter
-from multigtfs.models import Agency, Route, Service, Trip, ServiceDate, Stop
+from multigtfs.models import Agency, Route, Service, Trip, ServiceDate, Stop, StopTime
 from .serializers import  (
     AgencySerializer, RouteSerializer, GeoRouteSerializer, ServiceSerializer,
     TripSerializer, StopSerializer, GeoStopSerializer,
-    ServiceDateSerializer, ServiceWithDatesSerializer )
+    ServiceDateSerializer, ServiceWithDatesSerializer,
+    StopTimeSerializer )
 from .base_views import (
     FeedNestedViewSet, FeedNestedCachedViewSet,
     FeedServiceNestedViewSet, FeedThroughServiceNestedViewSet,
-    FeedRouteNestedViewSet, FeedThroughRouteNestedViewSet )
+    FeedRouteNestedViewSet, FeedThroughRouteNestedViewSet,
+    FeedThroughStopNestedViewSet, FeedStopNestedViewSet, FeedTripNestedViewSet )
 
 from rest_framework.response import Response
 
@@ -132,3 +134,25 @@ class FeedRouteTripViewSet(FeedThroughRouteNestedViewSet):
     lookup_field = "trip_id"
     serializer_class = TripSerializer
     queryset = Trip.objects.all()
+
+
+class FeedStopTimeViewSet(FeedThroughStopNestedViewSet):
+    """
+    Viewset for Stop (nested in feed - lookup by stop_id)
+    """
+    serializer_class = StopTimeSerializer
+    queryset = StopTime.objects.all()
+
+class FeedStopStopTimeViewSet(FeedStopNestedViewSet):
+    """
+    Viewset for StopTime (nested in feed and stop, lookup by stop_id)
+    """
+    serializer_class = StopTimeSerializer
+    queryset = StopTime.objects.all()
+
+class FeedTripStopTimeViewSet(FeedTripNestedViewSet):
+    """
+    Viewset for StopTime (nested in feed and trip, lookup by trip_id)
+    """
+    serializer_class = StopTimeSerializer
+    queryset = StopTime.objects.all()

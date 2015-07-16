@@ -13,7 +13,7 @@ from multigtfs.models import Stop, Service, Trip
 
 from .helpers import active_services_from_date
 from .serializers import (
-    StopSerializerWithDistance, ServiceSerializer, TripSerializer,
+    StopSerializerWithDistance, ServiceSerializer, TripSerializer, StopSerializer,
     GeoStopSerializerWithDistance )
 from .base_views import FeedNestedListAPIView, FeedThroughServiceNestedListAPIView
 
