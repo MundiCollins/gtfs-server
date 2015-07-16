@@ -15,7 +15,9 @@ from .nested_views import (
 from .list_views import (
     StopsNearView, FeedStopsNearView, GeoStopsNearView, FeedGeoStopsNearView,
     ServicesActiveView, FeedServiceActiveView,
-    TripActiveView, FeedTripActiveView, StopsActiveView, FeedStopActiveView )
+    TripActiveView, FeedTripActiveView, StopsActiveView,
+    FeedStopActiveView,
+    FeedStopTimesActiveView, FeedStopStopTimesActiveView )
 
 router = routers.SimpleRouter()
 router.register(r'feeds', FeedViewSet)
@@ -76,6 +78,15 @@ urls = [
     url(u'^stops-active-today/$', StopsActiveView.as_view(), name="stops-active-today"),
     url(u'^feeds/(?P<feed_pk>[^/]+)/stops-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', FeedStopActiveView.as_view(), name="feed-stop-active"),
     url(u'^feeds/(?P<feed_pk>[^/]+)/stops-active-today/$', FeedStopActiveView.as_view(), name="feed-stop-active-today"),
+
+    #url(u'^stop-times-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', StopTimesActiveView.as_view(), name="stop-times-active"),
+    #url(u'^stop-times-active-today/$', StopTimesActiveView.as_view(), name="stop-times-active-today"),
+
+    url(u'^feeds/(?P<feed_pk>[^/]+)/stops/(?P<stop_stop_id>[^/]+)/stop-times-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', FeedStopStopTimesActiveView.as_view(), name="feed-stop-stop-times-active"),
+    url(u'^feeds/(?P<feed_pk>[^/]+)/stops/(?P<stop_stop_id>[^/]+)/stop-times-active-today/$', FeedStopStopTimesActiveView.as_view(), name="feed-stop-stop-times-active-today"),
+
+    url(u'^feeds/(?P<feed_pk>[^/]+)/stop-times-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', FeedStopTimesActiveView.as_view(), name="feed-stop-times-active"),
+    url(u'^feeds/(?P<feed_pk>[^/]+)/stop-times-active-today/$', FeedStopTimesActiveView.as_view(), name="feed-stop-times-active-today"),
 
 ]
 urlpatterns = router.urls + feeds_router.urls + services_router.urls + routes_router.urls + stops_router.urls +  trips_router.urls + urls
