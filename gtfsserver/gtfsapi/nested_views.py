@@ -5,10 +5,13 @@ from .serializers import  (
     AgencySerializer, RouteSerializer, GeoRouteSerializer, ServiceSerializer,
     TripSerializer, StopSerializer, GeoStopSerializer,
     ServiceDateSerializer, ServiceWithDatesSerializer )
-
-from .base_views import  (FeedNestedViewSet, FeedNestedCachedViewSet,
+from .base_views import (
+    FeedNestedViewSet, FeedNestedCachedViewSet,
     FeedServiceNestedViewSet, FeedThroughServiceNestedViewSet,
     FeedRouteNestedViewSet, FeedThroughRouteNestedViewSet )
+
+from rest_framework.response import Response
+
 
 class InBBoxFilterBBox(InBBoxFilter):
     bbox_param = "bbox"
@@ -33,6 +36,9 @@ class FeedRouteViewSet(FeedNestedViewSet):
 
     @list_route()
     def _rtype(self, request, feed_pk=None):
+        """
+        Get an object with the occurring values/descriptions of "rtype" (route type) field.
+        """
         types = self.queryset.filter(feed__pk=feed_pk).values_list('rtype', flat=True).distinct()
         avail_types = dict(Route._meta.get_field('rtype').choices)
         out_types = {}
@@ -62,17 +68,16 @@ class FeedStopViewSet(FeedNestedViewSet):
     queryset = Stop.objects.all()
 
 
-
 class FeedGeoStopViewSet(FeedNestedCachedViewSet):
     """
     GeoViewset for Stop (nested in feed - lookup by stop_id)
     """
+    lookup_field = "stop_id"
     serializer_class = GeoStopSerializer
     queryset = Stop.objects.all()
     pagination_class = None
     filter_backends = (InBBoxFilterBBox, )
     bbox_filter_field = 'point'
-
 
 
 class FeedServiceViewSet(FeedNestedViewSet):
@@ -99,6 +104,7 @@ class ServiceServiceDateViewSet(FeedServiceNestedViewSet):
     serializer_class = ServiceDateSerializer
     queryset = ServiceDate.objects.all()
 
+
 class FeedServiceDateViewSet(FeedThroughServiceNestedViewSet):
     """
     Viewset for getting ServiceDate directly from feed
@@ -116,6 +122,7 @@ class RouteTripViewSet(FeedRouteNestedViewSet):
     lookup_field = "trip_id"
     serializer_class = TripSerializer
     queryset = Trip.objects.all()
+
 
 class FeedRouteTripViewSet(FeedThroughRouteNestedViewSet):
     """

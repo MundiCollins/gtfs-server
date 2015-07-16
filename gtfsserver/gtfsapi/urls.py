@@ -11,7 +11,9 @@ from .nested_views import (
     FeedServiceViewSet, FeedServiceDateViewSet, ServiceServiceDateViewSet,
     FeedRouteTripViewSet, RouteTripViewSet  )
 
-from .list_views import StopsNearView, GeoStopsNearView, ServicesActiveView, TripsActiveView
+from .list_views import (
+    StopsNearView, GeoStopsNearView, ServicesActiveView,
+    FeedServiceActiveView, TripActiveView, FeedTripActiveView )
 
 router = routers.SimpleRouter()
 router.register(r'feeds', FeedViewSet)
@@ -47,7 +49,9 @@ urls = [
     url(u'stops-near.geojson/(?P<x>\d+\.\d+)/(?P<y>\d+\.\d+)/$', GeoStopsNearView.as_view(), name="stops-near.geojson"),
 
     url(u'services-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', ServicesActiveView.as_view(), name="services-active"),
-    url(u'trips-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', TripsActiveView.as_view(), name="services-active"),
+    url(u'^feeds/(?P<feed_pk>[^/]+)/services-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', FeedServiceActiveView.as_view(), name="feed-services-active"),
+    url(u'trips-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', TripActiveView.as_view(), name="services-active"),
+    url(u'^feeds/(?P<feed_pk>[^/]+)/trips-active/(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})/$', FeedTripActiveView.as_view(), name="feed-trips-active"),
 
 ]
 urlpatterns = router.urls + feeds_router.urls + services_router.urls + routes_router.urls + urls

@@ -2,7 +2,7 @@ import datetime
 from django.db.models.signals import post_save, post_delete
 from django.core.cache import cache
 from django.utils.encoding import force_text
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
 from rest_framework_extensions.cache.decorators import cache_response
 from rest_framework.filters import DjangoFilterBackend
 from rest_framework.response import Response
@@ -15,8 +15,24 @@ from rest_framework_extensions.key_constructor.bits import (
     KwargsKeyBit
 )
 from multigtfs.models import Feed
+from rest_framework import generics
 
-class FeedNestedViewSet(ReadOnlyModelViewSet):
+class FeedNestedAPIView(object):
+    def get_queryset(self):
+        queryset = super(FeedNestedListAPIView, self).get_queryset()
+        queryset = queryset.filter(feed=self.kwargs['feed_pk'])
+        return queryset
+
+class FeedNestedListAPIView(generics.ListAPIView, FeedNestedAPIView):
+    pass
+
+class FeedNestedRetrieveAPIView(generics.RetrieveAPIView, FeedNestedAPIView):
+    pass
+
+class FeedNestedViewSet(FeedNestedListAPIView, FeedNestedRetrieveAPIView, GenericViewSet):
+    pass
+
+class FeedNestedViewSet2(ReadOnlyModelViewSet):
     """
     Base class for viewset nested into feed.
     """
