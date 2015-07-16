@@ -7,13 +7,17 @@ from rest_framework import filters
 from rest_framework import generics
 from rest_framework.viewsets import GenericViewSet
 
+import django_filters
+
 from multigtfs.models import Stop, Service, Trip
 
 from .helpers import active_services_from_date
 from .serializers import (
     StopSerializerWithDistance, ServiceSerializer, TripSerializer,
     GeoStopSerializerWithDistance )
-from .base_views import FeedNestedListAPIView
+from .base_views import FeedNestedListAPIView, FeedThroughServiceNestedListAPIView
+
+from .filters import TripFilter, ServiceFilter
 
 class StopsNearView(generics.ListAPIView):
     serializer_class = StopSerializerWithDistance
@@ -24,7 +28,6 @@ class StopsNearView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = super(StopsNearView, self).get_queryset()
-        queryset = self.filter_queryset(queryset)
         radius = self.request.query_params.get('radius', 1.0)
         radius = float(radius)
         x = self.kwargs['x']
@@ -34,17 +37,23 @@ class StopsNearView(generics.ListAPIView):
         return queryset
 
 
+class FeedStopsNearView(FeedNestedListAPIView, StopsNearView):
+    pass
+
 class GeoStopsNearView(StopsNearView):
     serializer_class = GeoStopSerializerWithDistance
     pagination_class = None
 
+class FeedGeoStopsNearView(FeedNestedListAPIView, GeoStopsNearView ):
+    pass
 
 
 class ServicesActiveView(generics.ListAPIView):
     serializer_class = ServiceSerializer
     queryset = Service.objects.all()
     filter_backends = (filters.DjangoFilterBackend,)
-    filter_fields = ('feed', )
+    filter_class = ServiceFilter
+    filter_fields = ('feed')
 
     def get_queryset(self):
         qset = super(ServicesActiveView, self).get_queryset()
@@ -57,11 +66,13 @@ class FeedServiceActiveView(FeedNestedListAPIView, ServicesActiveView):
     pass
 
 
+
 class TripActiveView(generics.ListAPIView):
     serializer_class = TripSerializer
     queryset = Trip.objects.all()
     filter_backends = (filters.DjangoFilterBackend,)
-    filter_fields = ('service__feed', )
+    filter_class = TripFilter
+    #filter_fields = ('service__feed', )
 
     def get_queryset(self):
         qset = super(TripActiveView, self).get_queryset()
@@ -71,5 +82,6 @@ class TripActiveView(generics.ListAPIView):
         active_trips = qset.filter(service__in=services)
         return active_trips
 
-class FeedTripActiveView(FeedNestedListAPIView, TripActiveView):
+#todo: base class is wrong
+class FeedTripActiveView(FeedThroughServiceNestedListAPIView, TripActiveView):
     pass
