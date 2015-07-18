@@ -35,7 +35,7 @@ class UpdatedAtDay(KeyBitBase):
         else:
             requested_date = datetime.date.today()
 
-        return str(requested_date) + "__" + str(kwargs)
+        return str(requested_date) + "__" + str(kwargs) + str(args)
 
 
 class UpdatedAtDayForFeed(DefaultKeyConstructor):
