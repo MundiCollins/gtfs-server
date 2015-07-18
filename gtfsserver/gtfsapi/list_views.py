@@ -1,5 +1,5 @@
 import datetime
-
+import time
 from django.contrib.gis.geos import Point, Polygon
 from django.contrib.gis.measure import D
 
@@ -8,6 +8,8 @@ from rest_framework import generics
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework_extensions.cache.decorators import cache_response
+
 import django_filters
 
 from multigtfs.models import Stop, Service, Trip, StopTime, Route
@@ -50,17 +52,93 @@ class GeoStopsNearView(StopsNearView):
 class FeedGeoStopsNearView(GeoStopsNearView, FeedNestedListAPIView ):
     pass
 
+"""
+class ProfileList(generics.ListAPIView):
 
-class ServicesActiveView(generics.ListAPIView):
+    def dispatch(self, request, *args, **kwargs):
+        global dispatch_time
+        global render_time
+
+        dispatch_start = time.time()
+        ret = super(ProfileList, self).dispatch(request, *args, **kwargs)
+
+        render_start = time.time()
+        ret.render()
+        render_time = time.time() - render_start
+
+        dispatch_time = time.time() - dispatch_start
+
+        return ret
+
+    def list(self, request, *args, **kwargs):
+        global serializer_time
+        global db_time
+
+        db_start = time.time()
+        queryset = self.filter_queryset(self.get_queryset())
+        db_time = time.time() - db_start
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer_start = time.time()
+            serializer = self.get_serializer(page, many=True)
+            data = serializer.data
+            serializer_time = time.time() - serializer_start
+            return self.get_paginated_response(data)
+
+        serializer_start = time.time()
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+        serializer_time = time.time() - serializer_start
+        return Response(data)
+
+
+def started(sender, **kwargs):
+    global started
+    started = time.time()
+
+def finished(sender, **kwargs):
+    if 'db_time' not in globals():
+        return
+    global db_time
+
+    total = time.time() - started
+    api_view_time = dispatch_time - (render_time + serializer_time + db_time)
+    request_response_time = total - dispatch_time
+
+    print ("Database lookup               | %.4fs" % db_time)
+    print ("Serialization                 | %.4fs" % serializer_time)
+    print ("Django request/response       | %.4fs" % request_response_time)
+    print ("API view                      | %.4fs" % api_view_time)
+    print ("Response rendering            | %.4fs" % render_time)
+
+
+from django.core.signals import request_started, request_finished
+request_started.connect(started)
+request_finished.connect(finished)
+"""
+
+
+from .cache_helpers import UpdatedAtDayForFeed
+
+class ListCachedForToday(generics.ListAPIView):
+    @cache_response(cache="filebased", key_func=UpdatedAtDayForFeed())
+    def list(self, request, *args, **kwargs):
+        return super(ListCachedForToday, self).list(request, *args, **kwargs)
+
+
+
+class ServicesActiveView(ListCachedForToday):
     serializer_class = ServiceSerializer
     queryset = Service.objects.all()
     filter_backends = (filters.DjangoFilterBackend,)
     filter_class = ServiceFilter
     filter_fields = ('feed')
 
+
     def get_queryset(self):
         qset = super(ServicesActiveView, self).get_queryset()
-        if year:
+        if self.kwargs.get('year', None):
             year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
             requested_date = datetime.date(year, month, day)
         else:
@@ -73,7 +151,7 @@ class FeedServiceActiveView(ServicesActiveView, FeedNestedListAPIView):
 
 
 
-class TripActiveView(generics.ListAPIView):
+class TripActiveView(ListCachedForToday):
     serializer_class = TripSerializer
     queryset = Trip.objects.all()
     filter_backends = (filters.DjangoFilterBackend,)
@@ -96,7 +174,7 @@ class FeedTripActiveView(TripActiveView, FeedThroughServiceNestedListAPIView):
     pass
 
 
-class StopsActiveView(generics.ListAPIView):
+class StopsActiveView(ListCachedForToday):
     """
     Stops associated with Active Trips
     """
@@ -134,7 +212,7 @@ class FeedStopActiveView(StopsActiveView, FeedNestedListAPIView):
 
 
 
-class StopTimesActiveView(generics.ListAPIView):
+class StopTimesActiveView(ListCachedForToday):
     """
     Stops associated with Active Trips
     """
@@ -190,11 +268,12 @@ class FeedStopTimesActiveView(StopTimesActiveView, FeedThroughStopNestedListAPIV
     pass
 
 
-
+from multigtfs.models.fields.seconds import Seconds
 
 class TrajectoriesView(APIView):
-    def get(self, request, year=None, month=None, day=None, hour=None, bbox=None):
+    def get(self, request, feed_pk=None, year=None, month=None, day=None, hour=None, bbox=None):
         out = {}
+
         today = datetime.date.today()
         bbox=[float(x) for x in bbox.split(",")]
         if year:
@@ -215,21 +294,28 @@ class TrajectoriesView(APIView):
 
 
         geom = Polygon.from_bbox(bbox)
-        matching_routes = Route.objects.filter(geometry__within=geom)
-        feeds = matching_routes.values_list('feed', flat=True).distinct()
-        services = active_services_from_date(requested_date, Service.objects.filter(feed__in=feeds))
+        matching_routes = Route.objects.filter(feed__pk=feed_pk, geometry__within=geom)
+        services = active_services_from_date(requested_date, Service.objects.filter(feed__pk=feed_pk))
         active_trips = Trip.objects.filter(route__in=matching_routes, service__in=services)
 
-        def in_hour(seconds):
-            return end_datetime.hour * 60 * 60 < seconds and seconds > requested_datetime.hour * 60 * 60
 
+
+        e = end_datetime.hour*3600
+        s = requested_datetime.hour*3600
         stop_times = StopTime.objects.filter(
             trip__in=active_trips,
-            stop__point__within=geom).order_by('stop_sequence').select_related()
+            stop__point__within=geom).order_by('arrival_time','stop_sequence').select_related()
+                #.filter(arrival_time__gte=s, arrival_time__lte=e)
+        #st = StopTimeSerializer(stop_times, many=True)
+        #print stop_times.count()
+        #return Response(st.data)
 
         for t in stop_times:
-            if not in_hour(t.arrival_time.seconds):
-                continue
+            #if t.arrival_time.seconds < s:
+            #    continue
+            #if t.arrival_time.seconds > e:
+            #        continue
+            #print t.arrival_time
             if t.trip.trip_id not in out:
                 out[t.trip.trip_id] = {
                     "route" : t.trip.route.route_id,

@@ -53,7 +53,7 @@ class FeedNestedCachedViewSet(FeedNestedViewSet):
 def change_api_updated_at(sender=None, instance=None, *args, **kwargs):
     value = datetime.datetime.utcnow()
     cache.set('%d_feed_api_updated_at_timestamp' % instance.id, value)
-    cache.set('%d_feed_api_updated_at_timestamp' % 0, value)
+    #cache.set('%d_feed_api_updated_at_timestamp' % 0, value)
 
 post_save.connect(receiver=change_api_updated_at, sender=Feed, dispatch_uid="change_api_updated_at_post_save")
 post_delete.connect(receiver=change_api_updated_at, sender=Feed, dispatch_uid="change_api_updated_at_post_delete")
