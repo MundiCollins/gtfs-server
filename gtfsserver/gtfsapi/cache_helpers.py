@@ -25,22 +25,25 @@ class UpdatedAtKeyBit(KeyBitBase):
 
 #def calculate_cache_key_date(view_instance, view_method,
 #                        request, args, kwargs):
+
 class UpdatedAtDay(KeyBitBase):
     def get_data(self, **rkwargs):
         kwargs = rkwargs['kwargs']
-
         if kwargs.get('year', None):
             year, month, day = int(kwargs['year']), int(kwargs['month']), int(kwargs['day'])
             requested_date = datetime.date(year, month, day)
         else:
             requested_date = datetime.date.today()
-
-        return str(requested_date) + "__" + str(kwargs) + str(args)
+        a = str(requested_date) + "__" + str(kwargs) + str(rkwargs['args'])
+        a += str(rkwargs['request'].query_params)
+        return a
 
 
 class UpdatedAtDayForFeed(DefaultKeyConstructor):
     updated_at = UpdatedAtKeyBit()
     data_day = UpdatedAtDay()
+    pagination = PaginationKeyBit()
+    query = QueryParamsKeyBit()
 
 class CustomObjectKeyConstructor(DefaultKeyConstructor):
     #retrieve_sql = RetrieveSqlQueryKeyBit()
