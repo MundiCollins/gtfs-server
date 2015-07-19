@@ -135,13 +135,17 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
 
-"""
-#memcache
+
+#memcached
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': '127.0.0.1:11211',
-    }
+    },
+    'filebased': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    },
 }
 
 CACHE_MIDDLEWARE_ALIAS = 'default'
@@ -160,3 +164,4 @@ CACHES = {
         'LOCATION': '/tmp',
     }
 }
+"""
