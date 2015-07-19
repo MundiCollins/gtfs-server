@@ -30,8 +30,10 @@ re_point = re.compile(r'(?P<name>point)\[(?P<index>\d)\]')
 batch_size = 100
 large_queryset_size = 100000
 
+from caching.base import CachingManager, CachingMixin, CachingQuerySet
 
-class BaseQuerySet(GeoQuerySet):
+
+class BaseQuerySet(GeoQuerySet, CachingQuerySet):
     def populated_column_map(self):
         '''Return the _column_map without unused optional fields'''
         column_map = []
@@ -80,7 +82,7 @@ class BaseManager(models.GeoManager):
         return self.filter(**kwargs)
 
 
-class Base(models.Model):
+class Base(CachingMixin, models.Model):
     """Base class for models that are defined in the GTFS spec
 
     Implementers need to define a class variable:
