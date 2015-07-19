@@ -120,6 +120,8 @@ request_finished.connect(finished)
 
 
 from .cache_helpers import UpdatedAtDayForFeed
+from django.core.cache import get_cache
+
 
 class ListCachedForToday(generics.ListAPIView):
     @cache_response(cache="filebased", key_func=UpdatedAtDayForFeed())
@@ -137,13 +139,29 @@ class ServicesActiveView(ListCachedForToday):
 
 
     def get_queryset(self):
+        fn = UpdatedAtDayForFeed()
+        key = fn(
+            view_instance=self,
+            view_method=self.get_queryset,
+            request=self.request,
+            args=self.args,
+            kwargs=self.kwargs,
+        )
+
+        if get_cache('filebased'):
+            qset = get_cache('filebased').get(key)
+            if qset:
+                return qset
         qset = super(ServicesActiveView, self).get_queryset()
+
         if self.kwargs.get('year', None):
             year, month, day = int(self.kwargs['year']), int(self.kwargs['month']), int(self.kwargs['day'])
             requested_date = datetime.date(year, month, day)
         else:
             requested_date = datetime.date.today()
         qset = active_services_from_date(requested_date, qset)
+        get_cache('filebased').set(key, qset)
+
         return qset
 
 class FeedServiceActiveView(ServicesActiveView, FeedNestedListAPIView):
@@ -159,6 +177,19 @@ class TripActiveView(ListCachedForToday):
     #filter_fields = ('service__feed', )
 
     def get_queryset(self):
+        fn = UpdatedAtDayForFeed()
+        key = fn(
+            view_instance=self,
+            view_method=self.get_queryset,
+            request=self.request,
+            args=self.args,
+            kwargs=self.kwargs,
+        )
+
+        if get_cache('filebased'):
+            qset = get_cache('filebased').get(key)
+            if qset:
+                return qset
         qset = super(TripActiveView, self).get_queryset()
         year = self.kwargs.get('year', None)
         if year:
@@ -168,6 +199,7 @@ class TripActiveView(ListCachedForToday):
             requested_date = datetime.date.today()
         services = active_services_from_date(requested_date)
         active_trips = qset.filter(service__in=services)
+        get_cache('filebased').set(key, active_trips)
         return active_trips
 
 class FeedTripActiveView(TripActiveView, FeedThroughServiceNestedListAPIView):
@@ -185,6 +217,20 @@ class StopsActiveView(ListCachedForToday):
     #filter_fields = ('service__feed', )
 
     def get_queryset(self):
+        fn = UpdatedAtDayForFeed()
+        key = fn(
+            view_instance=self,
+            view_method=self.get_queryset,
+            request=self.request,
+            args=self.args,
+            kwargs=self.kwargs,
+        )
+
+        if get_cache('filebased'):
+            qset = get_cache('filebased').get(key)
+            if qset:
+                return qset
+
         qset = super(StopsActiveView, self).get_queryset()
         year = self.kwargs.get('year', None)
         if year:
@@ -205,6 +251,7 @@ class StopsActiveView(ListCachedForToday):
 
         active_stop_times_pks = StopTime.objects.filter(trip__in=active_trips).values_list('stop__pk', flat=True)
         active_stops = qset.filter(pk__in=active_stop_times_pks).distinct()
+        get_cache('filebased').set(key, active_stops)
         return active_stops
 
 class FeedStopActiveView(StopsActiveView, FeedNestedListAPIView):
