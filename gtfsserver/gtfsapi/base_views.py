@@ -42,7 +42,7 @@ class FeedNestedCachedViewSet(FeedNestedViewSet):
     def list(self, request, feed_pk=None):
         return super(FeedNestedCachedViewSet, self).list(request, feed_pk=feed_pk)
 
-    @cache_response(cache="filebased", key_func=CustomObjectKeyConstructor())
+    #@cache_response(cache="filebased", key_func=CustomObjectKeyConstructor())
     def retrieve(self, request, *args, **kwargs):
         return super(FeedNestedCachedViewSet, self).retrieve(request, *args, **kwargs)
 
