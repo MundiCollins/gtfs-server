@@ -1,7 +1,7 @@
 from rest_framework.serializers import ModelSerializer,SerializerMethodField, FloatField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from multigtfs.models import Feed, Agency, Route, Stop, Service, ServiceDate, Trip, StopTime
-
+from rest_framework.serializers import CharField
 
 from django.contrib.gis.db.models.aggregates import Extent
 
@@ -31,6 +31,11 @@ class TripSerializer(ModelSerializer):
         exclude = ['geometry']
 
 class RouteSerializer(ModelSerializer):
+    @classmethod
+    def setup_eager_loading(cls, queryset):
+        queryset = queryset.select_related('feed')
+        return queryset
+
     class Meta:
         model = Route
         exclude = ['geometry']
@@ -38,22 +43,41 @@ class RouteSerializer(ModelSerializer):
 class RouteWithTripsSerializer(RouteSerializer):
     trips = TripSerializer(many=True, read_only=True)
 
+    @classmethod
+    def setup_eager_loading(cls, queryset):
+        queryset = super(RouteWithTripsSerializer, self).setup_eager_loading(queryset)
+        queryset = queryset.prefetch_related('trips')
+        return queryset
+
 
 class GeoRouteSerializer(GeoFeatureModelSerializer):
+    
     class Meta:
         model = Route
         geo_field = "geometry"
         #auto_bbox = True
 
 
-from rest_framework.serializers import CharField
+
 class StopSerializer(ModelSerializer):
+    
+    @classmethod
+    def setup_eager_loading(cls, queryset):
+        queryset = queryset.select_related('feed')
+        return queryset
+
     class Meta:
         model = Stop
         exclude = ['point']
 
 
 class GeoStopSerializer(GeoFeatureModelSerializer):
+    
+    @classmethod
+    def setup_eager_loading(cls, queryset):
+        queryset = queryset.select_related('feed')
+        return queryset
+
     class Meta:
         model = Stop
         geo_field = "point"
@@ -87,6 +111,12 @@ class ServiceDateSerializer(ModelSerializer):
 
 class ServiceSerializer(ModelSerializer):
     #service_dates = ServiceDateSerializer(many=True, read_only=True)
+
+    @classmethod
+    def setup_eager_loading(cls, queryset):
+        queryset = queryset.select_related('feed')
+        return queryset
+
     class Meta:
         model = Service
 
@@ -98,6 +128,11 @@ class StopTimeSerializer(ModelSerializer):
     stop_id = SerializerMethodField(read_only=True)
     route_id = SerializerMethodField(read_only=True)
     route = SerializerMethodField(read_only=True)
+
+    @classmethod
+    def setup_eager_loading(cls, queryset):
+        queryset = queryset.select_related('trip', 'stop', 'trip__route')
+        return queryset
 
     def get_trip_id(self, obj):
         return obj.trip.trip_id

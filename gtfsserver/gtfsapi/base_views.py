@@ -18,6 +18,10 @@ class FeedNestedMixin(object):
     def get_queryset(self):
         queryset = super(FeedNestedMixin, self).get_queryset()
         queryset = queryset.filter(feed=self.kwargs['feed_pk'])
+        # Set up eager loading to avoid N+1 selects
+        ser_class = self.get_serializer_class()
+        if hasattr(ser_class, "setup_eager_loading"):
+            queryset = ser_class.setup_eager_loading(queryset)  
         return queryset
 
 class FeedNestedListAPIView( FeedNestedMixin, generics.ListAPIView ):

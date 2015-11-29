@@ -48,6 +48,7 @@ INSTALLED_APPS = (
     'multigtfs',
     'exploreapp',
     'rest_framework_swagger',
+    #'heatmaps',
 )
 
 MIDDLEWARE_CLASSES = (
