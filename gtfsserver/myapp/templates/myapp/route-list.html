@@ -1,0 +1,51 @@
+{% extends 'myapp/master.html' %}
+
+{% block content %}
+    {% include 'myapp/fragments/search.html' %}
+
+    <div class="row">
+        <h2 class="sub-header"> List of Routes
+            <span class="pull-right">
+                <a href="{% url 'agency_list' feed_id=feed_id %}" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+                    Back to Agency List
+                </a>
+                <a href="{% url 'new_route' feed_id=feed_id agency_id=agency_id %}" class="btn btn-success">
+                    New Route
+                    <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                </a>
+            </span>
+        </h2>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Route #</th>
+                <th>Route Description</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for route in route_list %}
+                <tr>
+                    <td>{{ route.route_id }}</td>
+                    <td>{{ route.short_name }}</td>
+                    <td>{{ route.desc }}</td>
+                    <td>
+                        <a href="{% url 'route_detail' feed_id=feed_id agency_id=agency_id pk=route.id %}"
+                           class="btn btn-primary btn-sm">Route Detail
+                            <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% include 'myapp/fragments/pagination.html' %}
+    </div>
+
+{% endblock %}

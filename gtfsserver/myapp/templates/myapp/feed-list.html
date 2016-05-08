@@ -1,0 +1,29 @@
+{% extends 'myapp/master.html' %}
+
+{% block content %}
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Feed Name</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for feed in feed_list %}
+                <tr>
+                    <td>{{ feed.id }}</td>
+                    <td>{{ feed.name }}</td>
+                    <td>
+                        <a href="{% url 'agency_list' feed_id=feed.id %}" class="btn btn-primary btn-sm">View Agencies
+                            <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

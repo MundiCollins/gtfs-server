@@ -170,3 +170,4 @@ class TripByShapeListView(ListView):
 
     def get_queryset(self, **kwargs):
         return Trip.objects.filter(shape=self.kwargs['shape_id'])
+

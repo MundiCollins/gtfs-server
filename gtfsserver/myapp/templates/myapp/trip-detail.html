@@ -1,0 +1,406 @@
+{% extends 'myapp/master.html' %}
+
+{% block css %}
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}">
+
+    <style type="text/css">
+        #map {
+            height: 800px;
+            width: 100%;
+            position: absolute;
+        }
+
+        #inline-map {
+            height: 400px;
+            display: block;
+        }
+    </style>
+{% endblock %}
+
+{% block js %}
+    {% load staticfiles %}
+    <script src="{% static 'leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'tangram/tangram.min.js' %}"></script>
+    <script src="{% static 'leaflet-wicket/wicket.js' %}"></script>
+    <script src="{% static 'leaflet-wicket/wicket-leaflet.js' %}"></script>
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script src="{% static 'js/handlebars.js' %}"></script>
+    <script src="{% static 'js/leaflet.geometryutil.js' %}"></script>
+
+
+    {% verbatim %}
+    <script id="add-stop-item-template" type="text/x-handlebars-template">
+        <option value="{{ value }}" data-lat="{{ lat }}" data-lon="{{ lon }}">{{ text }}</option>
+    </script>
+
+    <script id="add-current-stop-item-template" type="text/x-handlebars-template">
+        <li>
+            <div class="form-group">
+                <span>{{ name }}</span>
+                <input type="hidden" name="stop_id" value="{{ id }}">
+
+                <button type="button" class="close" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+            </div>
+        </li>
+    </script>
+
+    <script id="alert-template" type="text/x-handlebars-template">
+        <div class="alert-message alert {{ alert_type }} alert-dismissible fade in" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                    aria-hidden="true">×</span></button>
+            {{{ message }}}
+        </div>
+    </script>
+
+    {% endverbatim %}
+
+
+    <script>
+        $(document).ready(function () {
+            var waypoints = [];
+            var wkt = new Wkt.Wkt();
+            var wkt_object;
+            var markers;
+            var map = L.map('map',  {crs: L.CRS.EPSG4326});
+            var original_route;
+            var generated_route;
+            var inline_map = L.map('inline-map',  {crs: L.CRS.EPSG4326});
+            var popup = L.popup();
+            var stop_marker = L.marker();
+            var alertTemplate = Handlebars.compile($("#alert-template").html());
+
+            $(document).on('success', function (e, data) {
+                data.alert_type = 'alert-success';
+                $('#alert').html(alertTemplate(data));
+                $(".alert-message").delay(2000).fadeOut("slow", function () {
+                    $(this).remove();
+                });
+
+            });
+
+            $(document).on('error', function (e, data) {
+                data.alert_type = 'alert-error';
+                $('#alert').html(alertTemplate(data));
+                $(".alert-message").delay(2000).fadeOut("slow", function () {
+                    $(this).remove();
+                });
+            });
+
+            wkt.read('{{ trip.geometry.wkt }}');
+            //  {crs: L.CRS.EPSG4326}
+            // Main map
+            Tangram.leafletLayer({
+                scene: 'https://raw.githubusercontent.com/tangrams/cinnabar-style/gh-pages/cinnabar-style.yaml',
+                attribution: '<a href="https://mapzen.com/tangram" target="_blank">Tangram</a> | \
+                              <a href="http://www.openstreetmap.org/about" target="_blank">&copy; OSM contributors | \
+                              <a href="https://mapzen.com/" target="_blank">Mapzen</a>',
+            }).addTo(map);
+
+            L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(inline_map);
+
+
+            wkt_object = wkt.toObject();
+            wkt_object.addTo(map);
+
+            map.fitBounds(wkt_object.getBounds());
+
+            {% for stop_time in trip.stoptime_set.all|dictsort:'stop_sequence' %}
+                waypoints.push({
+                    lat: {{ stop_time.stop.point.y }},
+                    lon: {{ stop_time.stop.point.x }},
+                    id: {{ stop_time.stop.id }},
+                    name: "{{ stop_time.stop.name|safe }}",
+                    {% if forloop.first or forloop.last %}
+                        type: 'break',
+                    {% else %}
+                        type: 'through',
+                    {% endif %}
+                });
+            {% endfor %}
+
+            generateRoute('{% url 'get_route_ajax' %}', waypoints);
+
+
+            $(document).on('markerDragEnd', function (e, data) {
+                var point = wkt.fromObject(data.marker).write();
+                var params = {
+                    id: waypoints[data.index].id,
+                    point: point,
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                }
+
+                // Update waypoint after dragging
+                waypoints[data.index].lat = data.marker.getLatLng().lat;
+                waypoints[data.index].lon = data.marker.getLatLng().lng;
+
+                updateStop('{% url 'update_stop_ajax' %}', params);
+                generateRoute('{% url 'get_route_ajax' %}', waypoints);
+            });
+
+            $(document).on('routeGenerated', function (e, data) {
+                // Clean up existing route
+                if (generated_route) {
+                    map.removeLayer(generated_route);
+                }
+
+                // Plot generated route
+                generated_route = data.route;
+                generated_route.addTo(map);
+
+                // Clean up existing stop markers
+                if (markers) {
+                    $.map(markers, function (marker) {
+                        map.removeLayer(marker);
+                    });
+                }
+
+                // Plot updated stop markers
+                markers = getMarkersFromWaypoints(waypoints);
+                plotMarkers(markers, map);
+            });
+
+            $('#stop-form').on('submit', function (event) {
+                var stop_name = $('#stop-name').val().trim();
+
+                if (!stop_name) {
+                    alert('Stop name cannot be empty');
+                    return false;
+                }
+
+                if (!stop_marker.getLatLng()) {
+                    alert('You need to select a stop location on the map');
+                    return false;
+                }
+
+                var stop_point = wkt.fromObject(stop_marker);
+                var stopNameSuffix = _.join(_.shuffle($('#stop-name').val().replace(/ /g, '')), '').substr(0, 3).toUpperCase();
+                var params = {
+                    stop_id: '{{ corridor }}' + $('#stop-designation').val() + '{{ inbound_status }}' + stopNameSuffix,
+                    name: $('#stop-name').val().trim(),
+                    point: stop_point.write(),
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    feed_id: {{ feed_id }}
+                };
+                add_stop('{% url 'add_stop_ajax' %}', params);
+                event.preventDefault();
+            });
+
+            $(document).on('addStop', function (e, data) {
+                var newWaypoint = {
+                    lat: data.stop.lat,
+                    lon: data.stop.lon,
+                    name: data.stop.name,
+                    id: data.stop.id,
+                    type: 'through'
+                }
+
+                waypoints = insertWaypoint(map, newWaypoint, waypoints);
+
+                // Refresh map after updating waypoints
+                generateRoute('{% url 'get_route_ajax' %}', waypoints);
+            });
+
+            $('#save-stop').on('click', function () {
+                $('#stop-form').submit();
+            });
+
+            $('button.close').on('click', function (event) {
+                event.preventDefault();
+
+                var parent = $(this).parent();
+                var stop_id = parent.find('input:hidden[name=stop_id]').val();
+                var stop_name = parent.find('span').html()
+                var index = $('button.close').index($(this)) - 1;
+                if (stop_id) {
+                    bootbox.confirm('Do you want to remove <strong>"' + stop_name + '"</strong> from this trip?', function(response){
+                       if (response){
+                           var message = '<strong>"' + stop_name + '"</strong> removed from this trip. <br/>';
+                           message += 'Click on "Save Stops" to make the change permanent.'
+
+                           waypoints.splice(index, 1);
+                           parent.parent().remove();
+
+                           $(document).trigger('success', {'message': message})
+
+                            bootbox.confirm('Do you want to remove <strong>"' + stop_name + '"</strong>  from the database?', function(response){
+                                if (response){
+                                    var params = {
+                                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                                        id: stop_id
+                                    }
+                                    delete_stop('{% url 'delete_stop_ajax' %}', params);
+                                }
+                            });
+                       }
+                    });
+                }
+            });
+
+            // Work on inline map
+            inline_map.on('click', function (event) {
+                if (!$('#stop-name').val().trim()) {
+                    alert('Enter A Stop name');
+                } else {
+                    popup
+                            .setLatLng(event.latlng)
+                            .setContent("You added '" + $('#stop-name').val().trim() + "' on the map at " + event.latlng.toString());
+                    stop_marker.setLatLng(event.latlng);
+                    stop_marker.addTo(inline_map);
+                    stop_marker.bindPopup(popup);
+                }
+            });
+
+            $('#stop-modal').on('shown.bs.modal', function (event) {
+                console.log(event);
+                inline_map.invalidateSize.bind(inline_map);
+                inline_map.fitBounds(wkt_object.getBounds());
+                inline_map.setZoom(14);
+            });
+
+            $('.update-stop-list').on('click', function (e) {
+                var params = {
+                    inbound_status: '{{ inbound_status }}',
+                    corridor: '{{ corridor }}'
+                }
+                fetch_and_populate_stops('{% url 'get_stop_list_ajax' %}', params, $(this).data('target'));
+            });
+
+            $('.add-stop-to-list').on('click', function () {
+                var stop = $('#stops :selected');
+
+                if (stop.val()) {
+                    var params = {
+                        lat: stop.data('lat'),
+                        lon: stop.data('lon'),
+                        name: stop.text(),
+                        id: stop.val(),
+                    }
+                    $(document).trigger('addStop', {stop: params});
+                }
+            });
+            // End work on inline map
+        });
+    </script>
+{% endblock %}
+
+
+{% block content %}
+     {% if error_message %}
+            <div class="alert-message alert {{ alert_type }} alert-dismissible fade in" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                    aria-hidden="true">×</span></button>
+            {{ error_message }}
+        </div>
+    {% endif %}
+    <div class="row">
+        <div class="modal fade" id="stop-modal" tabindex="-1" role="dialog" aria-labelledby="modal-label">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="modal-label">Add Stop</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form id="stop-form">
+                            <div class="form-group">
+                                <label for="stop-name" class="control-label">Name:</label>
+                                <input type="text" class="form-control" id="stop-name" name="stop-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="stop-designation" class="control-label">Designation:</label>
+                                <select class="form-control" id="stop-designation" name="stop-designation">
+                                    <option value="1">Designated</option>
+                                    <option value="0">Undesignated</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="parent-stop" class="control-label">Parent Stop:</label>
+                                <select class="form-control" id="parent-stop" name="parent-stop">
+                                    <option value="">--</option>
+                                </select>
+                                <button type="button" class="btn btn-primary update-stop-list"
+                                        data-target="#parent-stop">Update Stop List
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <input type="hidden" name="lat" id="stop-latitude">
+                                <input type="hidden" name="lon" id="stop-longitude">
+                                <input type="hidden" name="corridor" value="{{ corridor }}">
+                                <input type="hidden" name="inbound_status" value="{{ inbound_status }}">
+                            </div>
+                            <div id="inline-map">
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="save-stop">Save Stop</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div id="alert"></div>
+        <h2 class="sub-header"> Route: {{ trip.route.desc }} | Destination: {{ trip.headsign }}
+            <span class="pull-right">
+                <a href="{% url 'route_detail' feed_id=feed_id agency_id=agency_id pk=route_id %}" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+                    Back to Route
+                </a>
+                <a href="#" class="btn btn-success" data-toggle="modal" data-target="#stop-modal">
+                    Add Stop
+                    <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                </a>
+            </span>
+        </h2>
+        <div id="map-container" class="col-sm-7 col-md-8">
+            <div id="map">
+
+            </div>
+        </div>
+
+
+        <div id="current-stops" class="col-sm-4 col-sm-offset-1 col-md-3 col-md-offset-1">
+            <div class="row" id="current-stops">
+                <h3>Current Stops </h3>
+                <form method="post">
+                    <ul>
+                        {% for stop_time in trip.stoptime_set.all|dictsort:'stop_sequence' %}
+                            <li>
+                                <div class="form-group">
+                                    <span>{{ stop_time.stop.name }}</span>
+                                    <input type="hidden" name="stop_id" value="{{ stop_time.stop.id }}">
+
+                                    <button type="button" class="close" aria-label="Close"><span
+                                            aria-hidden="true">&times;</span></button>
+                                </div>
+                            </li>
+                        {% endfor %}
+                        {% csrf_token %}
+                    </ul>
+                    <button type="submit" class="btn btn-success">Save Stops&nbsp;<i
+                            class="glyphicon glyphicon-plus"></i></button>
+                </form>
+            </div>
+            <div class="row">
+                <h4>Select Another Stop </h4>
+                <button type="button" class="btn btn-primary btn-sm update-stop-list pull-left" data-target="#stops">
+                    &nbsp;<i
+                        class="glyphicon glyphicon-refresh"></i></button>
+                <select id="stops" class="col-sm-7 col-md-8">
+                    <option>--</option>
+                </select>
+                <button type="button" class="btn btn-success btn-sm add-stop-to-list" data-target="#stops">&nbsp;<i
+                        class="glyphicon glyphicon-plus"></i></button>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}

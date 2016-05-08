@@ -1,0 +1,44 @@
+{% extends 'myapp/master.html' %}
+
+{% block content %}
+
+    <div class="row">
+        <h2 class="sub-header"> List of Agencies
+            <span class="pull-right">
+                 <a href="{% url 'feed_list' %}" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+                    Back to Feed List
+                </a>
+            </span>
+        </h2>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Agency Name</th>
+                <th>Phone #</th>
+                <th>URL</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for agency in agency_list %}
+                <tr>
+                    <td>{{ agency.id }}</td>
+                    <td>{{ agency.name }}</td>
+                    <td>{{ agency.phone }}</td>
+                    <td>{{ agency.url }}</td>
+                    <td>
+                        <a href="{% url 'route_list' feed_id=feed_id agency_id=agency.id %}" class="btn btn-primary btn-sm">View Routes
+                            <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

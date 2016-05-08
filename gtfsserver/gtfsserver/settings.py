@@ -48,7 +48,9 @@ INSTALLED_APPS = (
     'multigtfs',
     'exploreapp',
     'rest_framework_swagger',
-    #'heatmaps',
+    'myapp',
+    'stronghold',
+    'crispy_forms'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -61,6 +63,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'stronghold.middleware.LoginRequiredMiddleware'
+
 )
 
 ROOT_URLCONF = 'gtfsserver.urls'
@@ -77,6 +81,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'debug': True,
         },
     },
 ]
@@ -145,3 +150,14 @@ CACHES = {
         'LOCATION': '/tmp',
     }
 }
+
+LOGIN_URL = '/login/'
+LOGOUT_URL = '/logout/'
+
+STRONGHOLD_DEFAULTS = True
+
+DEBUG_TOOLBAR_CONFIG = {
+  'JQUERY_URL': '',
+}
+
+CRISPY_TEMPLATE_PACK='bootstrap3'

@@ -1,10 +1,79 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'myapp/master.html' %}
 
-</body>
-</html>
+{% block css %}
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <h2 class="sub-header"> New Route Information
+            <span class="pull-right">
+                <a href="{% url 'route_list' feed_id=feed_id agency_id=agency_id %}" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+                    Back to Route List
+                </a>
+            </span>
+        </h2>
+    </div>
+
+     {% if error_message %}
+            <div class="alert-message alert {{ alert_type }} alert-dismissible fade in" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                    aria-hidden="true">×</span></button>
+            {{ error_message }}
+        </div>
+    {% endif %}
+
+    <form method="post" data-parsley-validate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="corridor">Corridor</label>
+            <select class="form-control" id="corridor" name="corridor">
+                <option value="1">Parklands, Limuru Road, Highridge</option>
+                <option value="2">Thika Road</option>
+                <option value="3">Juja Road</option>
+                <option value="4">Jogoo Road</option>
+                <option value="5">Mombasa Road</option>
+                <option value="6">Valley Road</option>
+                <option value="7">Ngong Road</option>
+                <option value="8">Westlands, Kangemi, Kinoo, Kikuyu</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="first-level-branch">1<sup>st</sup> Level Branch</label>
+            <select class="form-control" id="first-level-branch" name="first-level-branch">
+                {% include 'myapp/fragments/numeric-select-list-01-10.html' %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="second-level-branch">2<sup>nd</sup> Level Branch</label>
+            <select class="form-control" id="second-level-branch" name="second-level-branch">
+                {% include 'myapp/fragments/numeric-select-list-01-10.html' %}
+            </select>
+        </div>
+         <div class="form-group">
+            <label for="description">Route Description</label>
+            <input type="text" class="form-control" id="description" name="description" required>
+        </div>
+        <div class="form-group">
+            <label for="route-number">Route Number</label>
+            <input type="text" class="form-control" id="route-number" name="route-number" pattern="^[0-9][0-9a-zA-Z]{1,3}$" required>
+        </div>
+        <div class="form-group">
+            <label for="gazetted">Gazetted?</label>
+            <select class="form-control" id="gazetted" name="gazetted">
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="inbound">Inbound?</label>
+            <select class="form-control" id="inbound" name="inbound">
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+            </select>
+        </div>
+        <!-- Default to 'Bus' Type -->
+        <input type="hidden" name="route-type" value="3">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{% endblock %}
