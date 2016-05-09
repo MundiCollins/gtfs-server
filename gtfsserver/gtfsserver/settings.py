@@ -104,7 +104,8 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'gtfs',
         'USER': 'gtfs',
-        'PASSWORD' : 'gtfs'
+        'PASSWORD' : 'gtfs',
+        'HOST': '127.0.0.1'
     }
 }
 
