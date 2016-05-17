@@ -67,7 +67,7 @@ class RouteListView(generic.ListView):
         if q:
             queryset = queryset.filter(Q(short_name__icontains=q) | (Q(desc__icontains=q)))
 
-        return queryset
+        return queryset.order_by('short_name')
 
 
 class RouteDetailView(generic.DetailView):
@@ -175,7 +175,7 @@ def get_route_ajax(request, **kwargs):
 
         url = 'https://valhalla.mapzen.com/route?api_key={api_key}&json={json}'.format(**params)
         response = requests.get(url)
-        
+
         return http.HttpResponse(status=200, content=response.text)
     return http.HttpResponse(status=400)
 
