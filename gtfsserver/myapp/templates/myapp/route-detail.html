@@ -5,12 +5,12 @@
         <h2 class="sub-header">Route {{ route.short_name }} : {{ route.desc }}
             <span class="pull-right">
                 <a href="{% url 'route_list' feed_id=feed_id agency_id=agency_id %}"
-                    class="btn btn-primary">
+                   class="btn btn-primary">
                     <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
                     Back to Route List
                 </a>
                 <a href="{% url 'new_trip' feed_id=feed_id agency_id=agency_id route_id=route_id %}"
-                    class="btn btn-success">
+                   class="btn btn-success">
                     New Trip
                     <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
                 </a>
@@ -23,7 +23,7 @@
             <thead>
             <tr>
                 <th>Trip #</th>
-                <th>Headsign</th>
+                <th>Destination</th>
                 <th></th>
             </tr>
             </thead>
@@ -34,10 +34,11 @@
                     <td>{{ trip.headsign }}</td>
                     <td>
                         <a href="{% url 'trip_detail' feed_id=feed_id agency_id=agency_id route_id=route.id pk=trip.id %}"
-                           class="btn btn-primary btn-sm">Route Detail
+                           class="btn btn-primary btn-sm">Trip Detail
                             <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
                         </a>
                     </td>
+
                 </tr>
             {% endfor %}
             </tbody>

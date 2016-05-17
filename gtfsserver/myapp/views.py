@@ -90,9 +90,6 @@ def trip_detail_view(request, **kwargs):
     context = dict()
 
     trip = Trip.objects.get(pk=kwargs['pk'])
-    trip.update_geometry()
-    trip.refresh_from_db()  # refresh trip
-
     corridor_prefix = trip.route.route_id[0].zfill(2)
     inbound_status = trip.direction
 
@@ -183,11 +180,19 @@ def get_route_ajax(request, **kwargs):
 def update_stop_ajax(request, **kwargs):
     if request.method == 'POST' and request.is_ajax():
         try:
-            id = request.POST.get('id')
-            point = request.POST.get('point')
-            stop = Stop.objects.get(pk=id)
-            stop.point = point
-            stop.save()
+            request_params = request.POST.dict()
+            pk = request_params['pk']
+            del request_params['pk']
+            del request_params['csrfmiddlewaretoken']
+
+            if 'name' in request_params and 'value' in request_params:
+                request_params[request_params['name']] = request_params['value']
+                del request_params['value']
+
+            print Stop.objects.filter(pk=pk)
+            print Stop.objects.filter(pk=pk).update(**request_params)
+            stop = Stop.objects.get(pk=pk)
+
             return http.HttpResponse(json.dumps({'stop_id': stop.id,
                                                  'name': stop.name,
                                                  'lat': stop.point.y,
@@ -200,8 +205,7 @@ def update_stop_ajax(request, **kwargs):
 def delete_stop_ajax(request, **kwargs):
     if request.method == 'POST' and request.is_ajax():
         try:
-            id = request.POST.get('id')
-            stop = Stop.objects.get(pk=id)
+            stop = Stop.objects.get(pk=request.POST.get('pk'))
             stop_name = stop.name
 
             if stop.stoptime_set.count() > 1:
@@ -234,6 +238,7 @@ def new_route(request, **kwargs):
 
             route = Route(**params)
             route.save()
+            route.refresh_from_db()
 
             # add the newly generated route_id to kwargs
             kwargs['pk'] = route.id
@@ -264,7 +269,6 @@ def new_trip(request, **kwargs):
         current_fields = set(stops_reader.fieldnames)
 
         if not expected_fields.issubset(current_fields):
-            print expected_fields.difference(current_fields)
             context['error_message'] = 'The following columns are missing from the uploaded stops file: {}.'
             return render(request, 'myapp/new-trip.html', context)
 
@@ -339,8 +343,8 @@ def new_trip(request, **kwargs):
                 start_seconds += delta
 
             trip.save()
-            trip.refresh_from_db()
             trip.update_geometry()
+            trip.refresh_from_db()
 
             return http.HttpResponseRedirect(reverse('route_detail', kwargs={
                 'pk': kwargs['route_id'],

@@ -37,7 +37,8 @@
     <script id="add-current-stop-item-template" type="text/x-handlebars-template">
         <li>
             <div class="form-group">
-                <span>{{ name }}</span>
+                <a href="#" class="stop" id="name" data-type="text" data-pk="{{ id }}" data-url="{% url 'update_stop_ajax' %}"
+                   data-title="Enter Stop Name"> <span>{{ stop_time.stop.name }}</span></a>
                 <input type="hidden" name="stop_id" value="{{ id }}">
 
                 <button type="button" class="close" aria-label="Close"><span
@@ -128,7 +129,7 @@
             $(document).on('markerDragEnd', function (e, data) {
                 var point = wkt.fromObject(data.marker).write();
                 var params = {
-                    id: waypoints[data.index].id,
+                    pk: waypoints[data.index].id,
                     point: point,
                     csrfmiddlewaretoken: '{{ csrf_token }}',
                 }
@@ -230,7 +231,7 @@
                                 if (response){
                                     var params = {
                                         csrfmiddlewaretoken: '{{ csrf_token }}',
-                                        id: stop_id
+                                        pk: stop_id
                                     }
                                     delete_stop('{% url 'delete_stop_ajax' %}', params);
                                 }
@@ -283,6 +284,13 @@
                 }
             });
             // End work on inline map
+            $('.stop').editable({
+                params: function (params) {
+                    //originally params contain pk, name and value
+                    params.csrfmiddlewaretoken = '{{ csrf_token }}';
+                    return params;
+                }
+            });
         });
     </script>
 {% endblock %}
@@ -375,7 +383,8 @@
                         {% for stop_time in trip.stoptime_set.all|dictsort:'stop_sequence' %}
                             <li>
                                 <div class="form-group">
-                                    <span>{{ stop_time.stop.name }}</span>
+                                    <a href="#" class="stop" id="name" data-type="text" data-pk="{{ stop_time.stop.id }}" data-url="{% url 'update_stop_ajax' %}"
+                                       data-title="Enter Stop Name"> <span>{{ stop_time.stop.name }}</span></a>
                                     <input type="hidden" name="stop_id" value="{{ stop_time.stop.id }}">
 
                                     <button type="button" class="close" aria-label="Close"><span
