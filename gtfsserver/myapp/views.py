@@ -67,6 +67,7 @@ class RouteListView(generic.ListView):
         if q:
             queryset = queryset.filter(Q(short_name__icontains=q) | (Q(desc__icontains=q)))
 
+        list(queryset)  # refresh from DB
         return queryset.order_by('short_name')
 
 
@@ -177,23 +178,46 @@ def get_route_ajax(request, **kwargs):
     return http.HttpResponse(status=400)
 
 
+def parse_update_params(request_params):
+    result = dict()
+    pk = request_params['pk']
+
+    del request_params['pk']
+    del request_params['csrfmiddlewaretoken']
+
+    if 'name' in request_params and 'value' in request_params:
+        result[request_params['name']] = request_params['value']
+        del request_params['value']
+        del request_params['name']
+
+    result.update(**request_params)
+    return pk, result
+
+
+def update_route_ajax(request, **kwargs):
+    if request.method == 'POST' and request.is_ajax():
+        try:
+            pk, request_params = parse_update_params(request.POST.dict())
+            Route.objects.filter(pk=pk).update(**request_params)
+            route = Route.objects.get(pk=pk)
+            route.refresh_from_db()
+
+            return http.HttpResponse(json.dumps({
+                'pk': route.id,
+            }), status=201)
+        except DatabaseError as e:
+            return http.HttpResponse(status=400, content='An error occurred while processing your request')
+    return http.HttpResponse(status=400)
+
+
 def update_stop_ajax(request, **kwargs):
     if request.method == 'POST' and request.is_ajax():
         try:
-            request_params = request.POST.dict()
-            pk = request_params['pk']
-            del request_params['pk']
-            del request_params['csrfmiddlewaretoken']
-
-            if 'name' in request_params and 'value' in request_params:
-                request_params[request_params['name']] = request_params['value']
-                del request_params['value']
-
-            print Stop.objects.filter(pk=pk)
-            print Stop.objects.filter(pk=pk).update(**request_params)
+            pk, request_params = parse_update_params(request.POST.dict())
+            Stop.objects.filter(pk=pk).update(**request_params)
             stop = Stop.objects.get(pk=pk)
 
-            return http.HttpResponse(json.dumps({'stop_id': stop.id,
+            return http.HttpResponse(json.dumps({'id': stop.id,
                                                  'name': stop.name,
                                                  'lat': stop.point.y,
                                                  'lng': stop.point.x}), status=201)
@@ -355,6 +379,5 @@ def new_trip(request, **kwargs):
     return render(request, 'myapp/new-trip.html', context)
 
 
-
-
-
+def export_feed(request, **kwargs):
+    return render(request, 'myapp/export-feed.html')

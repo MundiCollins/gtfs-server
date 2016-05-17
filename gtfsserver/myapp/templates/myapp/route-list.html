@@ -14,6 +14,10 @@
                     New Route
                     <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
                 </a>
+                <a href="{% url 'export_feed' feed_id=feed_id %}" class="btn btn-info">
+                    Export
+                    <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+                </a>
             </span>
         </h2>
     </div>
@@ -32,8 +36,11 @@
             {% for route in route_list %}
                 <tr>
                     <td>{{ route.route_id }}</td>
-                    <td>{{ route.short_name }}</td>
-                    <td>{{ route.desc }}</td>
+                    <td> <a href="#" class="editable" id="short_name" data-type="text" data-pk="{{ route.id }}" data-url="{% url 'update_route_ajax' %}"
+                                       data-title="Enter Route Number"> <span> {{ route.short_name }}</span></a>
+                       </td>
+                    <td><a href="#" class="editable" id="desc" data-type="text" data-pk="{{ route.id }}" data-url="{% url 'update_route_ajax' %}"
+                                       data-title="Enter Route Description"> <span> {{ route.desc }}</span></a></td>
                     <td>
                         <a href="{% url 'route_detail' feed_id=feed_id agency_id=agency_id pk=route.id %}"
                            class="btn btn-primary btn-sm">Route Detail

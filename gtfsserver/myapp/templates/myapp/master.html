@@ -68,6 +68,18 @@
 <script src="{% static 'js/bootbox.js' %}"></script>
 <script src="{% static 'js/bootstrap-editable.js' %}"></script>
 
+<script type="text/javascript">
+    $(document).ready(function(){
+       $('.editable').editable({
+            params: function (params) {
+                //originally params contain pk, name and value
+                params.csrfmiddlewaretoken = '{{ csrf_token }}';
+                return params;
+            }
+        });
+    });
+</script>
+
 
 {% block js %}{% endblock %}
 </body>

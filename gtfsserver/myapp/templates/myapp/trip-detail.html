@@ -284,13 +284,6 @@
                 }
             });
             // End work on inline map
-            $('.stop').editable({
-                params: function (params) {
-                    //originally params contain pk, name and value
-                    params.csrfmiddlewaretoken = '{{ csrf_token }}';
-                    return params;
-                }
-            });
         });
     </script>
 {% endblock %}
@@ -383,7 +376,7 @@
                         {% for stop_time in trip.stoptime_set.all|dictsort:'stop_sequence' %}
                             <li>
                                 <div class="form-group">
-                                    <a href="#" class="stop" id="name" data-type="text" data-pk="{{ stop_time.stop.id }}" data-url="{% url 'update_stop_ajax' %}"
+                                    <a href="#" class="editable" id="name" data-type="text" data-pk="{{ stop_time.stop.id }}" data-url="{% url 'update_stop_ajax' %}"
                                        data-title="Enter Stop Name"> <span>{{ stop_time.stop.name }}</span></a>
                                     <input type="hidden" name="stop_id" value="{{ stop_time.stop.id }}">
 
