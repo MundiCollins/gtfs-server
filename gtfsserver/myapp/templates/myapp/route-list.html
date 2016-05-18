@@ -33,14 +33,14 @@
             </tr>
             </thead>
             <tbody>
-            {% for route in route_list %}
+            {% for route in route_list.all %}
                 <tr>
                     <td>{{ route.route_id }}</td>
                     <td> <a href="#" class="editable" id="short_name" data-type="text" data-pk="{{ route.id }}" data-url="{% url 'update_route_ajax' %}"
-                                       data-title="Enter Route Number"> <span> {{ route.short_name }}</span></a>
+                                       data-title="Enter Route Number">{{ route.short_name }}</a>
                        </td>
                     <td><a href="#" class="editable" id="desc" data-type="text" data-pk="{{ route.id }}" data-url="{% url 'update_route_ajax' %}"
-                                       data-title="Enter Route Description"> <span> {{ route.desc }}</span></a></td>
+                                       data-title="Enter Route Description">{{ route.desc }}</a></td>
                     <td>
                         <a href="{% url 'route_detail' feed_id=feed_id agency_id=agency_id pk=route.id %}"
                            class="btn btn-primary btn-sm">Route Detail

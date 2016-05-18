@@ -52,7 +52,7 @@ class RouteListView(generic.ListView):
         context['feed_id'] = self.kwargs['feed_id']
 
         request_params = self.request.GET.copy()
-        if request_params.has_key('page'):
+        if 'page' in request_params:
             del request_params['page']
 
         request_params = filter(itemgetter(1), request_params.items())
@@ -62,13 +62,15 @@ class RouteListView(generic.ListView):
         return context
 
     def get_queryset(self):
-        queryset = Route.objects.filter(feed_id=self.kwargs['feed_id'], agency_id=self.kwargs['agency_id'])
+        return Route.objects.filter(feed_id=self.kwargs['feed_id'], agency_id=self.kwargs['agency_id']).all().order_by('short_name')
+
         q = self.request.GET.get('q')
         if q:
             queryset = queryset.filter(Q(short_name__icontains=q) | (Q(desc__icontains=q)))
+        queryset = queryset.order_by('short_name')
 
-        list(queryset)  # refresh from DB
-        return queryset.order_by('short_name')
+
+        return queryset.all()
 
 
 class RouteDetailView(generic.DetailView):
@@ -120,12 +122,14 @@ def trip_detail_view(request, **kwargs):
 
                 # Add new stop times
                 for index, stop_id in enumerate(stop_ids):
-                    trip.stoptime_set.add(StopTime(stop_id=stop_id,
-                                                   trip_id=trip.id,
-                                                   stop_sequence=index+1,
-                                                   arrival_time=start_seconds,
-                                                   departure_time=start_seconds
-                                                   ))
+                    data = {
+                        'stop_id': stop_id,
+                        'trip_id': trip.id,
+                        'stop_sequence': index + 1,
+                        'arrival_time': start_seconds,
+                        'departure_time': start_seconds
+                    }
+                    trip.stoptime_set.add(StopTime(**data))
                     start_seconds += delta
 
                 # Delete existing route shape
@@ -198,14 +202,16 @@ def update_route_ajax(request, **kwargs):
     if request.method == 'POST' and request.is_ajax():
         try:
             pk, request_params = parse_update_params(request.POST.dict())
-            Route.objects.filter(pk=pk).update(**request_params)
             route = Route.objects.get(pk=pk)
-            route.refresh_from_db()
+            for k, v in request_params.iteritems():
+                setattr(route, k, v.strip())
+            route.save(update_fields=request_params.keys())
 
             return http.HttpResponse(json.dumps({
                 'pk': route.id,
             }), status=201)
         except DatabaseError as e:
+            print e
             return http.HttpResponse(status=400, content='An error occurred while processing your request')
     return http.HttpResponse(status=400)
 
@@ -216,7 +222,6 @@ def update_stop_ajax(request, **kwargs):
             pk, request_params = parse_update_params(request.POST.dict())
             Stop.objects.filter(pk=pk).update(**request_params)
             stop = Stop.objects.get(pk=pk)
-
             return http.HttpResponse(json.dumps({'id': stop.id,
                                                  'name': stop.name,
                                                  'lat': stop.point.y,
