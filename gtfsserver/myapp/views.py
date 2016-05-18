@@ -62,15 +62,14 @@ class RouteListView(generic.ListView):
         return context
 
     def get_queryset(self):
-        return Route.objects.filter(feed_id=self.kwargs['feed_id'], agency_id=self.kwargs['agency_id']).all().order_by('short_name')
+        queryset = super(RouteListView, self).get_queryset()
+        queryset = queryset.filter(feed_id=self.kwargs['feed_id'], agency_id=self.kwargs['agency_id'])
 
         q = self.request.GET.get('q')
         if q:
             queryset = queryset.filter(Q(short_name__icontains=q) | (Q(desc__icontains=q)))
         queryset = queryset.order_by('short_name')
-
-
-        return queryset.all()
+        return queryset
 
 
 class RouteDetailView(generic.DetailView):

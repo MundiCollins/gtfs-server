@@ -25,15 +25,15 @@ from django.contrib.gis.db.models.query import GeoQuerySet
 from django.db.models.fields.related import ManyToManyField
 from django.utils.six import StringIO, text_type, PY3
 
+from multigtfs.compat import get_blank_value
+
 logger = getLogger(__name__)
 re_point = re.compile(r'(?P<name>point)\[(?P<index>\d)\]')
-batch_size = 100
+batch_size = 1000
 large_queryset_size = 100000
 
-from caching.base import CachingManager, CachingMixin, CachingQuerySet
 
-
-class BaseQuerySet(GeoQuerySet, CachingQuerySet):
+class BaseQuerySet(GeoQuerySet):
     def populated_column_map(self):
         '''Return the _column_map without unused optional fields'''
         column_map = []
@@ -50,15 +50,11 @@ class BaseQuerySet(GeoQuerySet, CachingQuerySet):
             if point_match:
                 field = None
             else:
-                field = cls._meta.get_field_by_name(field_name)[0]
+                field = cls._meta.get_field(field_name)
 
             # Only add optional columns if they are used in the records
             if field and field.blank and not field.has_default():
-                if field.null:
-                    blank = None
-                else:
-                    blank = field.value_to_string(None)
-                kwargs = {field_name: blank}
+                kwargs = {field_name: get_blank_value(field)}
                 if self.exclude(**kwargs).exists():
                     column_map.append((csv_name, field_pattern))
             else:
@@ -82,7 +78,7 @@ class BaseManager(models.GeoManager):
         return self.filter(**kwargs)
 
 
-class Base(CachingMixin, models.Model):
+class Base(models.Model):
     """Base class for models that are defined in the GTFS spec
 
     Implementers need to define a class variable:
@@ -191,7 +187,7 @@ class Base(CachingMixin, models.Model):
             if point_match:
                 field = None
             else:
-                field = cls._meta.get_field_by_name(field_base)[0]
+                field = cls._meta.get_field(field_base)
 
             # Pick a conversion function for the field
             if point_match:
@@ -270,7 +266,6 @@ class Base(CachingMixin, models.Model):
                 fields['point'] = "POINT(%s)" % (' '.join(point_coords))
 
             # Is the item unique?
-            """
             ukey = tuple(ukey_values.get(u) for u in cls._unique_fields)
             if ukey in unique_line:
                 logger.warning(
@@ -279,7 +274,7 @@ class Base(CachingMixin, models.Model):
                 continue
             else:
                 unique_line[ukey] = csv_reader.line_num
-            """
+
             # Create after accumulating a batch
             new_objects.append(cls(**fields))
             if len(new_objects) % batch_size == 0:  # pragma: no cover
@@ -329,8 +324,7 @@ class Base(CachingMixin, models.Model):
                 point_match = re_point.match(base_field)
                 if point_match:
                     continue
-                field_type = cls._meta.get_field_by_name(
-                    base_field)[0]
+                field_type = cls._meta.get_field(base_field)
                 assert not isinstance(field_type, ManyToManyField)
                 sort_fields.append(field)
 
@@ -355,7 +349,7 @@ class Base(CachingMixin, models.Model):
         for field_name in fields:
             if '__' in field_name:
                 local_field_name, subfield_name = field_name.split('__', 1)
-                field = cls._meta.get_field_by_name(local_field_name)[0]
+                field = cls._meta.get_field(local_field_name)
                 field_type = field.rel.to
                 model_name = field_type.__name__
                 if model_name in model_to_field_name:

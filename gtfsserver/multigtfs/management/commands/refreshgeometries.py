@@ -94,7 +94,6 @@ class Command(BaseCommand):
             shapes = Shape.objects.in_feed(feed)
             for shape in shapes:
                 shape.update_geometry(update_parent=False)
-                print shape
             end_time = time.time()
             logger.debug(
                 "Imported %s shape%s in %0.1f seconds",
@@ -104,7 +103,6 @@ class Command(BaseCommand):
             start_time = time.time()
             trips = Trip.objects.in_feed(feed)
             for trip in trips:
-                print trip
                 trip.update_geometry(update_parent=False)
             end_time = time.time()
             logger.debug(
@@ -115,7 +113,6 @@ class Command(BaseCommand):
             start_time = time.time()
             routes = Route.objects.in_feed(feed)
             for route in routes:
-                print route
                 route.update_geometry()
             end_time = time.time()
             logger.debug(

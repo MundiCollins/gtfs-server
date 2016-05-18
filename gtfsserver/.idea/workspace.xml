@@ -2,8 +2,84 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2697bfd0-b3db-4151-b027-a4f98dcf35e4" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/myapp/templates/myapp/route-list.html" afterPath="$PROJECT_DIR$/myapp/templates/myapp/route-list.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/fixtures/test1.zip" afterPath="$PROJECT_DIR$/multigtfs/tests/fixtures/test1.zip" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/fixtures/test2.zip" afterPath="$PROJECT_DIR$/multigtfs/tests/fixtures/test2.zip" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/fixtures/test3.zip" afterPath="$PROJECT_DIR$/multigtfs/tests/fixtures/test3.zip" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/fixtures/test4.zip" afterPath="$PROJECT_DIR$/multigtfs/tests/fixtures/test4.zip" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/__init__.py" afterPath="$PROJECT_DIR$/multigtfs/__init__.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/admin.py" afterPath="$PROJECT_DIR$/multigtfs/admin.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/app_settings.py" afterPath="$PROJECT_DIR$/multigtfs/app_settings.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/management/__init__.py" afterPath="$PROJECT_DIR$/multigtfs/management/__init__.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/management/commands/__init__.py" afterPath="$PROJECT_DIR$/multigtfs/management/commands/__init__.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/management/commands/exportgtfs.py" afterPath="$PROJECT_DIR$/multigtfs/management/commands/exportgtfs.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/management/commands/importgtfs.py" afterPath="$PROJECT_DIR$/multigtfs/management/commands/importgtfs.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/management/commands/refreshgeometries.py" afterPath="$PROJECT_DIR$/multigtfs/management/commands/refreshgeometries.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/migrations/0001_initial.py" afterPath="$PROJECT_DIR$/multigtfs/migrations/0001_initial.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/migrations/__init__.py" afterPath="$PROJECT_DIR$/multigtfs/migrations/__init__.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/__init__.py" afterPath="$PROJECT_DIR$/multigtfs/models/__init__.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/agency.py" afterPath="$PROJECT_DIR$/multigtfs/models/agency.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/base.py" afterPath="$PROJECT_DIR$/multigtfs/models/base.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/block.py" afterPath="$PROJECT_DIR$/multigtfs/models/block.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/fare.py" afterPath="$PROJECT_DIR$/multigtfs/models/fare.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/fare_rule.py" afterPath="$PROJECT_DIR$/multigtfs/models/fare_rule.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/feed.py" afterPath="$PROJECT_DIR$/multigtfs/models/feed.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/feed_info.py" afterPath="$PROJECT_DIR$/multigtfs/models/feed_info.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/fields/__init__.py" afterPath="$PROJECT_DIR$/multigtfs/models/fields/__init__.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/fields/seconds.py" afterPath="$PROJECT_DIR$/multigtfs/models/fields/seconds.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/frequency.py" afterPath="$PROJECT_DIR$/multigtfs/models/frequency.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/route.py" afterPath="$PROJECT_DIR$/multigtfs/models/route.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/service.py" afterPath="$PROJECT_DIR$/multigtfs/models/service.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/service_date.py" afterPath="$PROJECT_DIR$/multigtfs/models/service_date.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/shape.py" afterPath="$PROJECT_DIR$/multigtfs/models/shape.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/stop.py" afterPath="$PROJECT_DIR$/multigtfs/models/stop.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/stop_time.py" afterPath="$PROJECT_DIR$/multigtfs/models/stop_time.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/transfer.py" afterPath="$PROJECT_DIR$/multigtfs/models/transfer.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/trip.py" afterPath="$PROJECT_DIR$/multigtfs/models/trip.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/models/zone.py" afterPath="$PROJECT_DIR$/multigtfs/models/zone.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0001_initial.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0001_initial.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0002_auto__chg_field_fare_transfers.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0002_auto__chg_field_fare_transfers.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0003_convert_fare_transfers.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0003_convert_fare_transfers.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0004_auto_add_geopoint_fields.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0004_auto_add_geopoint_fields.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0005_migrate_lat_lon_to_point.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0005_migrate_lat_lon_to_point.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0006_auto_del_lat_lon_fields.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0006_auto_del_lat_lon_fields.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0007_rm_geography_points.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0007_rm_geography_points.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0008_expand_field_feedinfo_version.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0008_expand_field_feedinfo_version.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0009_expand_field_route_short_name.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0009_expand_field_route_short_name.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0010_add_field_shape_geometry.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0010_add_field_shape_geometry.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0011_populate_field_shape_geometry.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0011_populate_field_shape_geometry.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0012_add_field_trip_geometry.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0012_add_field_trip_geometry.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0013_populate_field_trip_geometry.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0013_populate_field_trip_geometry.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0014_add_field_route_geometry.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0014_add_field_route_geometry.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0015_populate_field_route_geometry.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0015_populate_field_route_geometry.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0016_add_20140217_optional_fields.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0016_add_20140217_optional_fields.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0017_add_field_trip_service.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0017_add_field_trip_service.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0018_migrate_trip_services_to_service.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0018_migrate_trip_services_to_service.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0019_drop_field_trip_services.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0019_drop_field_trip_services.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0020_auto__add_jsonfields.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0020_auto__add_jsonfields.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0021_expand_more_ids.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0021_expand_more_ids.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0022_del_field_extra_data.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0022_del_field_extra_data.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0023_update_jsonfields_for_admin.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0023_update_jsonfields_for_admin.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/0024_service_dates_optional.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/0024_service_dates_optional.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/south_migrations/__init__.py" afterPath="$PROJECT_DIR$/multigtfs/south_migrations/__init__.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/__init__.py" afterPath="$PROJECT_DIR$/multigtfs/tests/__init__.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/fixtures/README" afterPath="$PROJECT_DIR$/multigtfs/tests/fixtures/README" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_agency.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_agency.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_block.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_block.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_fare.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_fare.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_fare_rule.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_fare_rule.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_feed.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_feed.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_feed_info.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_feed_info.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_fields.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_fields.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_frequency.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_frequency.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_route.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_route.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_service.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_service.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_service_date.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_service_date.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_shape.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_shape.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_stop.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_stop.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_stop_time.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_stop_time.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_transfer.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_transfer.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_trip.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_trip.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/multigtfs/tests/test_zone.py" afterPath="$PROJECT_DIR$/multigtfs/tests/test_zone.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/myapp/views.py" afterPath="$PROJECT_DIR$/myapp/views.py" />
     </list>
     <ignored path="gtfsserver.iws" />
@@ -29,24 +105,14 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="views.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="views.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/myapp/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="348">
-              <caret line="64" column="26" selection-start-line="64" selection-start-column="26" selection-end-line="64" selection-end-column="26" />
+            <state relative-caret-position="-102">
+              <caret line="67" column="37" selection-start-line="67" selection-start-column="37" selection-end-line="67" selection-end-column="37" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="route.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/multigtfs/models/route.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="300">
-              <caret line="20" column="44" selection-start-line="20" selection-start-column="44" selection-end-line="20" selection-end-column="44" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -139,6 +205,7 @@
         <option value="$PROJECT_DIR$/myapp/urls.py" />
         <option value="$PROJECT_DIR$/gtfsserver/settings.py" />
         <option value="$PROJECT_DIR$/myapp/templates/myapp/route-list.html" />
+        <option value="$PROJECT_DIR$/multigtfs/models/route.py" />
         <option value="$PROJECT_DIR$/myapp/views.py" />
       </list>
     </option>
@@ -701,9 +768,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="46" y="23" width="1874" height="1177" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1905016" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1905016" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -735,11 +802,6 @@
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/multigtfs/models/agency.py</url>
           <line>15</line>
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/multigtfs/models/route.py</url>
-          <line>14</line>
-          <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
       <option name="time" value="3" />
@@ -1086,24 +1148,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../env/lib/python2.7/site-packages/caching/base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="411">
-          <caret line="251" column="22" selection-start-line="251" selection-start-column="22" selection-end-line="251" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/myapp/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="348">
-          <caret line="64" column="26" selection-start-line="64" selection-start-column="26" selection-end-line="64" selection-end-column="26" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/multigtfs/models/base.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="351">
@@ -1114,9 +1158,29 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/multigtfs/models/route.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="20" column="44" selection-start-line="20" selection-start-column="44" selection-end-line="20" selection-end-column="44" />
+        <state relative-caret-position="435">
+          <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
+          <folding>
+            <element signature="e#580#619#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../env/lib/python2.7/site-packages/caching/base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="411">
+          <caret line="251" column="22" selection-start-line="251" selection-start-column="22" selection-end-line="251" selection-end-column="22" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/myapp/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-102">
+          <caret line="67" column="37" selection-start-line="67" selection-start-column="37" selection-end-line="67" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
