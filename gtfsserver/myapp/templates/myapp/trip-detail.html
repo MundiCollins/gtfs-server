@@ -127,19 +127,27 @@
 
 
             $(document).on('markerDragEnd', function (e, data) {
-                var point = wkt.fromObject(data.marker).write();
-                var params = {
-                    pk: waypoints[data.index].id,
-                    point: point,
-                    csrfmiddlewaretoken: '{{ csrf_token }}',
-                }
+                console.log(data);
+                var message = 'Do you want to make this change permananent on the stop <strong>"' + (data.marker.options.title) + '"</strong>?'
+                bootbox.confirm(message, function(response) {
+                    if (!response){
+                        location.reload();
+                    }else{
+                        var point = wkt.fromObject(data.marker).write();
+                        var params = {
+                            pk: waypoints[data.index].id,
+                            point: point,
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                        }
 
-                // Update waypoint after dragging
-                waypoints[data.index].lat = data.marker.getLatLng().lat;
-                waypoints[data.index].lon = data.marker.getLatLng().lng;
+                        // Update waypoint after dragging
+                        waypoints[data.index].lat = data.marker.getLatLng().lat;
+                        waypoints[data.index].lon = data.marker.getLatLng().lng;
 
-                updateStop('{% url 'update_stop_ajax' %}', params);
-                generateRoute('{% url 'get_route_ajax' %}', waypoints);
+                        updateStop('{% url 'update_stop_ajax' %}', params);
+                        generateRoute('{% url 'get_route_ajax' %}', waypoints);
+                    }
+                });
             });
 
             $(document).on('routeGenerated', function (e, data) {
