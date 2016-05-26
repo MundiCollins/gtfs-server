@@ -67,18 +67,68 @@
 <script src="{% static 'js/lodash.js' %}"></script>
 <script src="{% static 'js/bootbox.js' %}"></script>
 <script src="{% static 'js/bootstrap-editable.js' %}"></script>
+<script src="{% static 'js/handlebars.js' %}"></script>
+
 
 <script type="text/javascript">
     $(document).ready(function(){
-       $('.editable').editable({
+        var alertTemplate = Handlebars.compile($("#alert-template").html());
+        $('.editable').editable({
             params: function (params) {
                 //originally params contain pk, name and value
                 params.csrfmiddlewaretoken = '{{ csrf_token }}';
                 return params;
             }
         });
+
+        $(document).on('success', function (e, data) {
+            data.alert_type = 'alert-success';
+            $('#alert').html(alertTemplate(data));
+            $(".alert-message").delay(2000).fadeOut("slow", function () {
+                $(this).remove();
+                $(document).trigger('afterSuccess');
+            });
+
+        });
+
+        $(document).on('error', function (e, data) {
+            data.alert_type = 'alert-danger';
+            $('#alert').html(alertTemplate(data));
+            $(".alert-message").delay(2000).fadeOut("slow", function () {
+                $(this).remove();
+            });
+        });
     });
 </script>
+
+
+ {% verbatim %}
+    <script id="add-stop-item-template" type="text/x-handlebars-template">
+        <option value="{{ value }}" data-lat="{{ lat }}" data-lon="{{ lon }}">{{ text }}</option>
+    </script>
+
+    <script id="add-current-stop-item-template" type="text/x-handlebars-template">
+        <li>
+            <div class="form-group">
+                <a href="#" class="stop" id="name" data-type="text" data-pk="{{ id }}" data-url="{% url 'update_stop_ajax' %}"
+                   data-title="Enter Stop Name"> <span>{{ stop_time.stop.name }}</span></a>
+                <input type="hidden" name="stop_id" value="{{ id }}">
+
+                <button type="button" class="close" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+            </div>
+        </li>
+    </script>
+
+    <script id="alert-template" type="text/x-handlebars-template">
+        <div class="alert-message alert {{ alert_type }} alert-dismissible fade in" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                    aria-hidden="true">×</span></button>
+            {{{ message }}}
+        </div>
+    </script>
+
+    {% endverbatim %}
 
 
 {% block js %}{% endblock %}

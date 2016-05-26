@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url
 
 from .views import (AgencyListView, RouteListView, RouteDetailView, FeedListView, StopListJSONView,
                     trip_detail_view, add_stop_ajax, get_route_ajax, update_stop_ajax, delete_stop_ajax,
-                    new_route, new_trip, export_feed, update_route_ajax)
+                    new_route, new_trip, export_feed, update_route_ajax, update_trip_ajax, delete_route_ajax)
 
 urlpatterns = patterns(
     '',
@@ -20,9 +20,12 @@ urlpatterns = patterns(
     url(r'gtfs/stops.json/', StopListJSONView.as_view(), name='get_stop_list_ajax'),
     url(r'gtfs/stop.json/', add_stop_ajax, name='add_stop_ajax'),
     url(r'gtfs/route.json/', get_route_ajax, name='get_route_ajax'),
-    url(r'gtfs/updatestop.json/', update_stop_ajax, name='update_stop_ajax'),
-    url(r'gtfs/deletestop.json/', delete_stop_ajax, name='delete_stop_ajax'),
 
+    url(r'gtfs/updatestop.json/', update_stop_ajax, name='update_stop_ajax'),
     url(r'gtfs/updateroute.json/', update_route_ajax, name='update_route_ajax'),
+    url(r'gtfs/updatetrip.json/', update_trip_ajax, name='update_trip_ajax'),
+
+    url(r'gtfs/deletestop.json/', delete_stop_ajax, name='delete_stop_ajax'),
+    url(r'gtfs/deleteroute.json/', delete_route_ajax, name='delete_route_ajax'),
 
 )

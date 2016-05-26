@@ -197,20 +197,21 @@ def parse_update_params(request_params):
     return pk, result
 
 
+def _update_ajax(ModelClass, request):
+    if request.method == 'POST' and request.is_ajax():
+        pk, request_params = parse_update_params(request.POST.dict())
+        ModelClass.objects.filter(pk=pk).update(**request_params)
+        return ModelClass.objects.get(pk=pk)
+
+
 def update_route_ajax(request, **kwargs):
     if request.method == 'POST' and request.is_ajax():
         try:
-            pk, request_params = parse_update_params(request.POST.dict())
-            route = Route.objects.get(pk=pk)
-            for k, v in request_params.iteritems():
-                setattr(route, k, v.strip())
-            route.save(update_fields=request_params.keys())
-
+            route = _update_ajax(Route, request)
             return http.HttpResponse(json.dumps({
                 'pk': route.id,
             }), status=201)
         except DatabaseError as e:
-            print e
             return http.HttpResponse(status=400, content='An error occurred while processing your request')
     return http.HttpResponse(status=400)
 
@@ -218,13 +219,21 @@ def update_route_ajax(request, **kwargs):
 def update_stop_ajax(request, **kwargs):
     if request.method == 'POST' and request.is_ajax():
         try:
-            pk, request_params = parse_update_params(request.POST.dict())
-            Stop.objects.filter(pk=pk).update(**request_params)
-            stop = Stop.objects.get(pk=pk)
-            return http.HttpResponse(json.dumps({'id': stop.id,
+            stop = _update_ajax(Stop, request)
+            return http.HttpResponse(json.dumps({'pk': stop.id,
                                                  'name': stop.name,
                                                  'lat': stop.point.y,
                                                  'lng': stop.point.x}), status=201)
+        except DatabaseError as e:
+            return http.HttpResponse(status=400, content='An error occurred while processing your request')
+    return http.HttpResponse(status=400)
+
+
+def update_trip_ajax(request, **kwargs):
+    if request.method == 'POST' and request.is_ajax():
+        try:
+            trip = _update_ajax(Trip, request)
+            return http.HttpResponse(json.dumps({'pk': trip.id}), status=201)
         except DatabaseError as e:
             return http.HttpResponse(status=400, content='An error occurred while processing your request')
     return http.HttpResponse(status=400)
@@ -243,7 +252,22 @@ def delete_stop_ajax(request, **kwargs):
                 return http.HttpResponse(content='Stop <strong>{}</strong> has been successfully deleted'.format(stop_name),
                                          status=200)
         except DatabaseError as e:
+            print e
             return http.HttpResponse(status=400, content='An error occurred while processing your request')
+
+
+def delete_route_ajax(request, **kwargs):
+    if request.method == 'POST' and request.is_ajax():
+        try:
+            print request.POST.dict()
+            route = Route.objects.get(pk=request.POST.get('pk'))
+            route_short_name = route.short_name
+            route.delete()
+            return http.HttpResponse(content='Route <strong>{}</strong> has been successfully deleted'.format(route_short_name),
+                                     status=200)
+        except DatabaseError as e:
+            return http.HttpResponse(status=400, content='An error occurred while processing your request')
+    return http.HttpResponse(status=400)
 
 
 def new_route(request, **kwargs):
@@ -274,6 +298,8 @@ def new_route(request, **kwargs):
             return http.HttpResponseRedirect(reverse('route_detail', kwargs=kwargs))
         except Exception as e:
             print e.message
+            kwargs['alert_type'] = 'alert-danger'
+            kwargs['error_message'] = 'An error occurred while processing your request'
 
     return render(request, 'myapp/new-route.html', kwargs)
 
@@ -349,18 +375,21 @@ def new_trip(request, **kwargs):
 
             start_seconds = 6 * 3600  # First trip is at 6am
             delta = 5 * 60  # % minutes
+
             for row in stops_reader:
                 tmp = list(row['stop_name'].upper().replace(' ', ''))
                 random.shuffle(tmp)
-                stop_suffix = tmp[:3] # pick 3 characters from the shuffled stop name
+                stop_suffix = "".join(tmp[:3]) # pick 3 characters from the shuffled stop name
                 stop = Stop(
-                   stop_id='{}{}{}{}'.format(corridor.zfill(2), row['designation'], direction, stop_suffix),
+                   stop_id='{}{}{}{}'.format(corridor.zfill(2), row['designation'] or 0, direction, stop_suffix),
                    name=row['stop_name'],
                    point='POINT({} {})'.format(row['lon'], row['lat']),
                    location_type=row['location_type'],
                    feed_id=kwargs['feed_id']
                 )
                 stop.save()
+
+                print '{}{}{}{}'.format(corridor.zfill(2), row['designation'], direction, stop_suffix)
 
                 trip.stoptime_set.add(StopTime(stop_id=stop.id,
                                                trip_id=trip.id,

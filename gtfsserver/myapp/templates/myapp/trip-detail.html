@@ -25,37 +25,7 @@
     <script src="{% static 'leaflet-wicket/wicket.js' %}"></script>
     <script src="{% static 'leaflet-wicket/wicket-leaflet.js' %}"></script>
     <script src="{% static 'js/utils.js' %}"></script>
-    <script src="{% static 'js/handlebars.js' %}"></script>
     <script src="{% static 'js/leaflet.geometryutil.js' %}"></script>
-
-
-    {% verbatim %}
-    <script id="add-stop-item-template" type="text/x-handlebars-template">
-        <option value="{{ value }}" data-lat="{{ lat }}" data-lon="{{ lon }}">{{ text }}</option>
-    </script>
-
-    <script id="add-current-stop-item-template" type="text/x-handlebars-template">
-        <li>
-            <div class="form-group">
-                <a href="#" class="stop" id="name" data-type="text" data-pk="{{ id }}" data-url="{% url 'update_stop_ajax' %}"
-                   data-title="Enter Stop Name"> <span>{{ stop_time.stop.name }}</span></a>
-                <input type="hidden" name="stop_id" value="{{ id }}">
-
-                <button type="button" class="close" aria-label="Close"><span
-                        aria-hidden="true">&times;</span></button>
-            </div>
-        </li>
-    </script>
-
-    <script id="alert-template" type="text/x-handlebars-template">
-        <div class="alert-message alert {{ alert_type }} alert-dismissible fade in" role="alert">
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-                    aria-hidden="true">×</span></button>
-            {{{ message }}}
-        </div>
-    </script>
-
-    {% endverbatim %}
 
 
     <script>
@@ -70,24 +40,6 @@
             var inline_map = L.map('inline-map',  {crs: L.CRS.EPSG4326});
             var popup = L.popup();
             var stop_marker = L.marker();
-            var alertTemplate = Handlebars.compile($("#alert-template").html());
-
-            $(document).on('success', function (e, data) {
-                data.alert_type = 'alert-success';
-                $('#alert').html(alertTemplate(data));
-                $(".alert-message").delay(2000).fadeOut("slow", function () {
-                    $(this).remove();
-                });
-
-            });
-
-            $(document).on('error', function (e, data) {
-                data.alert_type = 'alert-error';
-                $('#alert').html(alertTemplate(data));
-                $(".alert-message").delay(2000).fadeOut("slow", function () {
-                    $(this).remove();
-                });
-            });
 
             wkt.read('{{ trip.geometry.wkt }}');
             //  {crs: L.CRS.EPSG4326}
@@ -369,14 +321,14 @@
                 </a>
             </span>
         </h2>
-        <div id="map-container" class="col-sm-7 col-md-8">
+        <div id="map-container" class="col-lg-8">
             <div id="map">
 
             </div>
         </div>
 
 
-        <div id="current-stops" class="col-sm-4 col-sm-offset-1 col-md-3 col-md-offset-1">
+        <div id="current-stops" class="col-lg-3 col-lg-offset-9">
             <div class="row" id="current-stops">
                 <h3>Current Stops </h3>
                 <form method="post">

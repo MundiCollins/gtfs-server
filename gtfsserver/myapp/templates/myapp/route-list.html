@@ -4,6 +4,7 @@
     {% include 'myapp/fragments/search.html' %}
 
     <div class="row">
+        <div id="alert"></div>
         <h2 class="sub-header"> List of Routes
             <span class="pull-right">
                 <a href="{% url 'agency_list' feed_id=feed_id %}" class="btn btn-primary">
@@ -46,6 +47,10 @@
                            class="btn btn-primary btn-sm">Route Detail
                             <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
                         </a>
+                        <a href="{% url 'delete_route_ajax'%}" data-pk="{{ route.id }}" data-desc="{{ route.desc }}"
+                           class="btn btn-danger btn-sm delete-stop">Route Detail
+                            <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
+                        </a>
                     </td>
                 </tr>
             {% endfor %}
@@ -55,4 +60,33 @@
         {% include 'myapp/fragments/pagination.html' %}
     </div>
 
+{% endblock %}
+
+{% block js %}
+    {% load staticfiles %}
+
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('a.delete-stop').on('click', function(e){
+                e.preventDefault();
+                var route_name = $(this).data('desc')
+                var route_pk = $(this).data('pk')
+                bootbox.confirm('Do you want to delete route <strong>"' + route_name + '"</strong> ?', function(response){
+                   if(response){
+                       var params = {
+                           csrfmiddlewaretoken: '{{ csrf_token }}',
+                           pk:  route_pk
+                       }
+                       delete_route('{% url 'delete_route_ajax' %}', params);
+                   }
+                });
+            });
+
+            $(document).on('afterSuccess', function(){
+                location.reload();
+            });
+        });
+
+    </script>
 {% endblock %}

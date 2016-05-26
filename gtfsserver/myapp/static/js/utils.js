@@ -187,15 +187,30 @@ function delete_stop(url, params){
         url: url,
         method: 'POST',
         data: params,
-        dataType: 'json'
     });
 
     request.done(function (result) {
-        $(document).trigger('success', {message: result})
+        $(document).trigger('success', {message: result});
     });
 
     request.fail(function (jqXHR, textStatus, error) {
-        $(document).trigger('error', {message: 'Failed due to: ' + status + " " + error})
+        $(document).trigger('error', {message: jqXHR.responseText});
+    });
+}
+
+function delete_route(url, params){
+    var request = $.ajax({
+        url: url,
+        method: 'POST',
+        data: params,
+    });
+
+    request.done(function (result) {
+        $(document).trigger('success', {message: result});
+    });
+
+    request.fail(function (jqXHR, textStatus, error) {
+        $(document).trigger('error', {message: 'Failed due to: ' + status + " " + error});
     });
 }
 

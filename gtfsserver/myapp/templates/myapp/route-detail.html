@@ -31,7 +31,8 @@
             {% for trip in route.trip_set.all %}
                 <tr>
                     <td>{{ trip.trip_id }}</td>
-                    <td>{{ trip.headsign }}</td>
+                    <td> <a href="#" class="editable" id="headsign" data-type="text" data-pk="{{ trip.id }}" data-url="{% url 'update_trip_ajax' %}"
+                                       data-title="Enter Destination"> <span>{{ trip.headsign }}</span></a></td>
                     <td>
                         <a href="{% url 'trip_detail' feed_id=feed_id agency_id=agency_id route_id=route.id pk=trip.id %}"
                            class="btn btn-primary btn-sm">Trip Detail
