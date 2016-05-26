@@ -48,7 +48,7 @@
                             <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
                         </a>
                         <a href="{% url 'delete_route_ajax'%}" data-pk="{{ route.id }}" data-desc="{{ route.desc }}"
-                           class="btn btn-danger btn-sm delete-stop">Delete
+                           class="btn btn-danger btn-sm delete-route">Delete
                             <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
                         </a>
                     </td>
@@ -68,7 +68,9 @@
     <script src="{% static 'js/utils.js' %}"></script>
     <script type="text/javascript">
         $(document).ready(function(){
-            $('a.delete-stop').on('click', function(e){
+            var table_row = null;
+            $('a.delete-route').on('click', function(e){
+                table_row = $(this).parent().parent();
                 e.preventDefault();
                 var route_name = $(this).data('desc')
                 var route_pk = $(this).data('pk')
@@ -83,8 +85,8 @@
                 });
             });
 
-            $(document).on('afterSuccess', function(){
-                location.reload();
+            $(document).on('success', function(){
+                table_row.remove();
             });
         });
 

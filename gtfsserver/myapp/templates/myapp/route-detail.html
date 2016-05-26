@@ -2,7 +2,8 @@
 
 {% block content %}
     <div class="row">
-        <h2 class="sub-header">Route {{ route.short_name }} : {{ route.desc }}
+        <div id="alert"></div>
+        <h2 class="sub-header">Route {{ route.short_name }} Trips : {{ route.desc }}
             <span class="pull-right">
                 <a href="{% url 'route_list' feed_id=feed_id agency_id=agency_id %}"
                    class="btn btn-primary">
@@ -38,6 +39,10 @@
                            class="btn btn-primary btn-sm">Trip Detail
                             <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
                         </a>
+                        <a href="{% url 'delete_trip_ajax'%}" data-pk="{{ trip.id }}" data-headsign="{{ trip.headsign }}"
+                           class="btn btn-danger btn-sm delete-trip">Delete
+                            <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
+                        </a>
                     </td>
 
                 </tr>
@@ -46,4 +51,36 @@
         </table>
         {% include 'myapp/fragments/pagination.html' %}
     </div>
+{% endblock %}
+
+{% block js %}
+    {% load staticfiles %}
+
+    <script src="{% static 'js/utils.js' %}"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            var table_row = null;
+            $('a.delete-trip').on('click', function(e){
+                e.preventDefault();
+                table_row = $(this).parent().parent();
+
+                var trip_name = $(this).data('headsign')
+                var trip_pk = $(this).data('pk')
+                bootbox.confirm('Do you want to delete trip <strong>"' + trip_name + '"</strong> ?', function(response){
+                   if(response){
+                       var params = {
+                           csrfmiddlewaretoken: '{{ csrf_token }}',
+                           pk:  trip_pk
+                       }
+                       delete_trip('{% url 'delete_trip_ajax' %}', params);
+                   }
+                });
+            });
+
+            $(document).on('success', function(){
+                table_row.remove();
+            });
+        });
+
+    </script>
 {% endblock %}

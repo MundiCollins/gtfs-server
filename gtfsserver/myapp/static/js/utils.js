@@ -210,7 +210,24 @@ function delete_route(url, params){
     });
 
     request.fail(function (jqXHR, textStatus, error) {
-        $(document).trigger('error', {message: 'Failed due to: ' + status + " " + error});
+        $(document).trigger('error', {message: jqXHR.responseText});
+    });
+}
+
+function delete_trip(url, params){
+    var request = $.ajax({
+        url: url,
+        method: 'POST',
+        data: params,
+    });
+
+    request.done(function (result) {
+        console.log(result);
+        $(document).trigger('success', {message: result});
+    });
+
+    request.fail(function (jqXHR, textStatus, error) {
+        $(document).trigger('error', {message: jqXHR.responseText});
     });
 }
 

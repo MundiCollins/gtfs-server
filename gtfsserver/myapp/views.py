@@ -259,11 +259,23 @@ def delete_stop_ajax(request, **kwargs):
 def delete_route_ajax(request, **kwargs):
     if request.method == 'POST' and request.is_ajax():
         try:
-            print request.POST.dict()
             route = Route.objects.get(pk=request.POST.get('pk'))
             route_short_name = route.short_name
             route.delete()
             return http.HttpResponse(content='Route <strong>{}</strong> has been successfully deleted'.format(route_short_name),
+                                     status=200)
+        except DatabaseError as e:
+            return http.HttpResponse(status=400, content='An error occurred while processing your request')
+    return http.HttpResponse(status=400)
+
+
+def delete_trip_ajax(request, **kwargs):
+    if request.method == 'POST' and request.is_ajax():
+        try:
+            trip = Trip.objects.get(pk=request.POST.get('pk'))
+            trip_direction = trip.headsign
+            trip.delete()
+            return http.HttpResponse(content='Trip <strong>{}</strong> has been successfully deleted'.format(trip_direction),
                                      status=200)
         except DatabaseError as e:
             return http.HttpResponse(status=400, content='An error occurred while processing your request')

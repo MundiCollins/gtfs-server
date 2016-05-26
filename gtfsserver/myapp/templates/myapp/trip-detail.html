@@ -244,6 +244,10 @@
                 }
             });
             // End work on inline map
+
+            $(document).on('afterSuccess', function(){
+                location.reload();
+            });
         });
     </script>
 {% endblock %}
