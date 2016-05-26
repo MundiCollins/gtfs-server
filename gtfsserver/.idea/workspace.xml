@@ -5,14 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2697bfd0-b3db-4151-b027-a4f98dcf35e4" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/myapp/static/js/utils.js" afterPath="$PROJECT_DIR$/myapp/static/js/utils.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/myapp/templates/myapp/master.html" afterPath="$PROJECT_DIR$/myapp/templates/myapp/master.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/myapp/templates/myapp/route-detail.html" afterPath="$PROJECT_DIR$/myapp/templates/myapp/route-detail.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/myapp/templates/myapp/route-list.html" afterPath="$PROJECT_DIR$/myapp/templates/myapp/route-list.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/myapp/templates/myapp/trip-detail.html" afterPath="$PROJECT_DIR$/myapp/templates/myapp/trip-detail.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/myapp/urls.py" afterPath="$PROJECT_DIR$/myapp/urls.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/myapp/views.py" afterPath="$PROJECT_DIR$/myapp/views.py" />
     </list>
     <ignored path="gtfsserver.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -49,7 +42,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="route-detail.html" pinned="false" current-in-tab="true">
+      <file leaf-file-name="route-detail.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/myapp/templates/myapp/route-detail.html">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="720">
@@ -59,11 +52,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="route-list.html" pinned="false" current-in-tab="false">
+      <file leaf-file-name="route-list.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/myapp/templates/myapp/route-list.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="760">
-              <caret line="79" column="24" selection-start-line="79" selection-start-column="24" selection-end-line="79" selection-end-column="24" />
+            <state relative-caret-position="265">
+              <caret line="46" column="64" selection-start-line="46" selection-start-column="64" selection-end-line="46" selection-end-column="64" />
               <folding />
             </state>
           </provider>
@@ -155,10 +148,10 @@
         <option value="$PROJECT_DIR$/myapp/templates/myapp/route-detail.html" />
         <option value="$PROJECT_DIR$/myapp/urls.py" />
         <option value="$PROJECT_DIR$/myapp/templates/myapp/trip-detail.html" />
-        <option value="$PROJECT_DIR$/myapp/templates/myapp/route-list.html" />
         <option value="$PROJECT_DIR$/myapp/templates/myapp/master.html" />
         <option value="$PROJECT_DIR$/myapp/static/js/utils.js" />
         <option value="$PROJECT_DIR$/myapp/views.py" />
+        <option value="$PROJECT_DIR$/myapp/templates/myapp/route-list.html" />
       </list>
     </option>
   </component>
@@ -1131,14 +1124,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/myapp/templates/myapp/route-list.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="760">
-          <caret line="79" column="24" selection-start-line="79" selection-start-column="24" selection-end-line="79" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/myapp/templates/myapp/master.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="370">
@@ -1177,6 +1162,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="720">
           <caret line="48" column="14" selection-start-line="48" selection-start-column="14" selection-end-line="48" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/myapp/templates/myapp/route-list.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="265">
+          <caret line="46" column="64" selection-start-line="46" selection-start-column="64" selection-end-line="46" selection-end-column="64" />
           <folding />
         </state>
       </provider>
