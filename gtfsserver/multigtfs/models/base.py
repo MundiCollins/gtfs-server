@@ -100,6 +100,8 @@ class Base(models.Model):
 
     """
 
+    is_approved = models.BooleanField(default=False)
+
     class Meta:
         abstract = True
         app_label = 'multigtfs'

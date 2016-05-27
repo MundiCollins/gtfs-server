@@ -3,6 +3,8 @@
 {% block css %}
     {% load staticfiles %}
     <link rel="stylesheet" href="{% static 'leaflet/leaflet.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-switch.css' %}">
+
 
     <style type="text/css">
         #map {
@@ -26,10 +28,13 @@
     <script src="{% static 'leaflet-wicket/wicket-leaflet.js' %}"></script>
     <script src="{% static 'js/utils.js' %}"></script>
     <script src="{% static 'js/leaflet.geometryutil.js' %}"></script>
+    <script src="{% static 'js/bootstrap-switch.js' %}"></script>
+
 
 
     <script>
         $(document).ready(function () {
+            var mapzen_tracing = false;
             var waypoints = [];
             var wkt = new Wkt.Wkt();
             var wkt_object;
@@ -110,7 +115,9 @@
 
                 // Plot generated route
                 generated_route = data.route;
-                generated_route.addTo(map);
+                if(mapzen_tracing){
+                    generated_route.addTo(map);
+                }
 
                 // Clean up existing stop markers
                 if (markers) {
@@ -245,8 +252,18 @@
             });
             // End work on inline map
 
-            $(document).on('afterSuccess', function(){
-                location.reload();
+            $('#mapzen-switch').bootstrapSwitch();
+            $('#mapzen-switch').on('switchChange.bootstrapSwitch', function(event, state){
+                mapzen_tracing = state;
+                if (generated_route){
+                    if (state){
+                        generated_route.addTo(map);
+                    }else{
+                        map.removeLayer(generated_route);
+                    }
+                }
+                if(state && generated_route){
+                }
             });
         });
     </script>
@@ -315,14 +332,22 @@
         <div id="alert"></div>
         <h2 class="sub-header"> Route: {{ trip.route.desc }} | Destination: {{ trip.headsign }}
             <span class="pull-right">
-                <a href="{% url 'route_detail' feed_id=feed_id agency_id=agency_id pk=route_id %}" class="btn btn-primary">
-                    <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
-                    Back to Route
-                </a>
-                <a href="#" class="btn btn-success" data-toggle="modal" data-target="#stop-modal">
-                    Add Stop
-                    <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
-                </a>
+                <form class="form-inline">
+                    <div class="checkbox">
+                        <label>
+                           Mapzen Tracing: <input type="checkbox" id="mapzen-switch">
+                        </label>
+                    </div>
+                    <a href="{% url 'route_detail' feed_id=feed_id agency_id=agency_id pk=route_id %}" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+                        Back to Route
+                    </a>
+                    <a href="#" class="btn btn-success" data-toggle="modal" data-target="#stop-modal">
+                        Add Stop
+                        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                    </a>
+                </form>
+
             </span>
         </h2>
         <div id="map-container" class="col-lg-8">
