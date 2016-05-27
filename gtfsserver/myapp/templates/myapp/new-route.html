@@ -5,14 +5,14 @@
 
 {% block content %}
     <div class="row">
-        <h2 class="sub-header"> New Route Information
+        <h3 class="sub-header"> New Route Information
             <span class="pull-right">
                 <a href="{% url 'route_list' feed_id=feed_id agency_id=agency_id %}" class="btn btn-primary">
                     <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
                     Back to Route List
                 </a>
             </span>
-        </h2>
+        </h3>
     </div>
 
      {% if error_message %}
