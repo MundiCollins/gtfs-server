@@ -16,6 +16,9 @@ from django.db.utils import DatabaseError
 from multigtfs.models import Agency, Route, Stop, Feed, Service, Trip, StopTime, Shape, ShapePoint
 from .mixins import AJAXListMixin
 import random
+from django.template.defaultfilters import slugify
+from django.core.servers.basehttp import FileWrapper
+from datetime import datetime
 
 
 class FeedListView(generic.ListView):
@@ -425,4 +428,16 @@ def new_trip(request, **kwargs):
 
 
 def export_feed(request, **kwargs):
-    return render(request, 'myapp/export-feed.html')
+    feed = Feed.objects.get(id=kwargs['feed_id'])
+    file_name = "{}_{}.zip".format(slugify(feed.name),datetime.now().strftime("%Y%m%d-%H%M%S"))
+    file_path = "/tmp/{}".format(file_name)
+    feed.export_gtfs(file_path)
+
+    temp = file(name=file_path, mode='rb')
+    wrapper = FileWrapper(temp)
+    response = http.HttpResponse(wrapper, content_type='application/zip')  # mimetype is replaced by content_type for django 1.7
+    response['Content-Disposition'] = 'attachment; filename={}'.format(file_name)
+    response['Content-Length'] = temp.tell()
+    temp.seek(0)
+
+    return response
