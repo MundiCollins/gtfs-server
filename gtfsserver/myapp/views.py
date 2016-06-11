@@ -20,6 +20,9 @@ from django.template.defaultfilters import slugify
 from django.core.servers.basehttp import FileWrapper
 from datetime import datetime
 
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+
 
 class FeedListView(generic.ListView):
     template_name = 'myapp/feed-list.html'
@@ -134,11 +137,11 @@ def trip_detail_view(request, **kwargs):
                     trip.stoptime_set.add(StopTime(**data))
                     start_seconds += delta
 
-                # Delete existing route shape
+                    # Delete existing route shape
 
-                #trip.shape
+                    # trip.shape
 
-                # Add new route shape
+                    # Add new route shape
         except DatabaseError as e:
             context['error_message'] = 'An error occurred while processing your request.'
 
@@ -249,11 +252,14 @@ def delete_stop_ajax(request, **kwargs):
             stop_name = stop.name
 
             if stop.stoptime_set.count() > 1:
-                return http.HttpResponse(status=400, content='Stop <strong>{}</strong> is still in use in other Trips'.format(stop_name))
+                return http.HttpResponse(status=400,
+                                         content='Stop <strong>{}</strong> is still in use in other Trips'.format(
+                                             stop_name))
             else:
                 stop.delete()
-                return http.HttpResponse(content='Stop <strong>{}</strong> has been successfully deleted'.format(stop_name),
-                                         status=200)
+                return http.HttpResponse(
+                    content='Stop <strong>{}</strong> has been successfully deleted'.format(stop_name),
+                    status=200)
         except DatabaseError as e:
             print e
             return http.HttpResponse(status=400, content='An error occurred while processing your request')
@@ -265,8 +271,9 @@ def delete_route_ajax(request, **kwargs):
             route = Route.objects.get(pk=request.POST.get('pk'))
             route_short_name = route.short_name
             route.delete()
-            return http.HttpResponse(content='Route <strong>{}</strong> has been successfully deleted'.format(route_short_name),
-                                     status=200)
+            return http.HttpResponse(
+                content='Route <strong>{}</strong> has been successfully deleted'.format(route_short_name),
+                status=200)
         except DatabaseError as e:
             return http.HttpResponse(status=400, content='An error occurred while processing your request')
     return http.HttpResponse(status=400)
@@ -278,8 +285,9 @@ def delete_trip_ajax(request, **kwargs):
             trip = Trip.objects.get(pk=request.POST.get('pk'))
             trip_direction = trip.headsign
             trip.delete()
-            return http.HttpResponse(content='Trip <strong>{}</strong> has been successfully deleted'.format(trip_direction),
-                                     status=200)
+            return http.HttpResponse(
+                content='Trip <strong>{}</strong> has been successfully deleted'.format(trip_direction),
+                status=200)
         except DatabaseError as e:
             return http.HttpResponse(status=400, content='An error occurred while processing your request')
     return http.HttpResponse(status=400)
@@ -320,11 +328,11 @@ def new_route(request, **kwargs):
 
 
 def new_trip(request, **kwargs):
-    route =  Route.objects.get(id=kwargs.get('route_id'))
+    route = Route.objects.get(id=kwargs.get('route_id'))
     # Create route + shape
     context = dict()
     context.update(kwargs)
-    context['headsign_options'] =route.desc.split('-')
+    context['headsign_options'] = route.desc.split('-')
     context['service_times'] = Service.objects.all()
 
     if request.method == 'POST':
@@ -334,7 +342,7 @@ def new_trip(request, **kwargs):
         stops_reader = csv.DictReader(request.FILES['stops-file'])
 
         # Check required fields are present in the stops csv
-        expected_fields = set(['stop_sequence','lat', 'lon', 'stop_name', 'designation', 'location_type'])
+        expected_fields = set(['stop_sequence', 'lat', 'lon', 'stop_name', 'designation', 'location_type'])
         current_fields = set(stops_reader.fieldnames)
 
         if not expected_fields.issubset(current_fields):
@@ -382,7 +390,7 @@ def new_trip(request, **kwargs):
                 shape_point = ShapePoint(
                     point='POINT ({} {})'.format(point[0], point[1]),
                     shape_id=shape.id,
-                    sequence= sequence_start + idx
+                    sequence=sequence_start + idx
                 )
 
                 shape_point.save()
@@ -394,13 +402,13 @@ def new_trip(request, **kwargs):
             for row in stops_reader:
                 tmp = list(row['stop_name'].upper().replace(' ', ''))
                 random.shuffle(tmp)
-                stop_suffix = "".join(tmp[:3]) # pick 3 characters from the shuffled stop name
+                stop_suffix = "".join(tmp[:3])  # pick 3 characters from the shuffled stop name
                 stop = Stop(
-                   stop_id='{}{}{}{}'.format(corridor.zfill(2), row['designation'] or 0, direction, stop_suffix),
-                   name=row['stop_name'],
-                   point='POINT({} {})'.format(row['lon'], row['lat']),
-                   location_type=row['location_type'],
-                   feed_id=kwargs['feed_id']
+                    stop_id='{}{}{}{}'.format(corridor.zfill(2), row['designation'] or 0, direction, stop_suffix),
+                    name=row['stop_name'],
+                    point='POINT({} {})'.format(row['lon'], row['lat']),
+                    location_type=row['location_type'],
+                    feed_id=kwargs['feed_id']
                 )
                 stop.save()
 
@@ -429,15 +437,25 @@ def new_trip(request, **kwargs):
 
 def export_feed(request, **kwargs):
     feed = Feed.objects.get(id=kwargs['feed_id'])
-    file_name = "{}_{}.zip".format(slugify(feed.name),datetime.now().strftime("%Y%m%d-%H%M%S"))
+    file_name = "{}_{}.zip".format(slugify(feed.name), datetime.now().strftime("%Y%m%d-%H%M%S"))
     file_path = "/tmp/{}".format(file_name)
     feed.export_gtfs(file_path)
 
     temp = file(name=file_path, mode='rb')
     wrapper = FileWrapper(temp)
-    response = http.HttpResponse(wrapper, content_type='application/zip')  # mimetype is replaced by content_type for django 1.7
+    response = http.HttpResponse(wrapper,
+                                 content_type='application/zip')  # mimetype is replaced by content_type for django 1.7
     response['Content-Disposition'] = 'attachment; filename={}'.format(file_name)
     response['Content-Length'] = temp.tell()
     temp.seek(0)
 
     return response
+
+
+@receiver(post_delete, sender=Trip, dispatch_uid='trip_delete_signal')
+def _trip_post_delete(sender, instance, using, **kwargs):
+    '''
+    It seems shapes are not deleted when trips are deleted. This fixes that by listening on the deletion event
+    of a trip and then delete the associated shapes
+    '''
+    instance.shape.delete()
