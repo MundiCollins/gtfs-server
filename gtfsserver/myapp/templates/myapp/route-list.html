@@ -74,7 +74,9 @@
                 e.preventDefault();
                 var route_name = $(this).data('desc')
                 var route_pk = $(this).data('pk')
-                bootbox.confirm('Do you want to delete route <strong>"' + route_name + '"</strong> ?', function(response){
+                var message = 'Do you want to delete route <strong>"' + route_name + '"</strong> ? <br/>';
+                    message += 'Choosing "OK" will permanently delete the route, associated trips and stops';
+                bootbox.confirm(message, function(response){
                    if(response){
                        var params = {
                            csrfmiddlewaretoken: '{{ csrf_token }}',

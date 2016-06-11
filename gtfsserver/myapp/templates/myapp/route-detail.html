@@ -66,7 +66,9 @@
 
                 var trip_name = $(this).data('headsign')
                 var trip_pk = $(this).data('pk')
-                bootbox.confirm('Do you want to delete trip <strong>"' + trip_name + '"</strong> ?', function(response){
+                var message = 'Do you want to delete route <strong>"' + trip_name + '"</strong> ? <br/>';
+                    message += 'Choosing "OK" will permanently the trip and  associated stops';
+                bootbox.confirm(message, function(response){
                    if(response){
                        var params = {
                            csrfmiddlewaretoken: '{{ csrf_token }}',
