@@ -3,7 +3,7 @@ from django.conf.urls import patterns, url
 from .views import (AgencyListView, RouteListView, RouteDetailView, FeedListView, StopListJSONView,
                     trip_detail_view, add_stop_ajax, get_route_ajax, update_stop_ajax, delete_stop_ajax,
                     new_route, new_trip, export_feed, update_route_ajax, update_trip_ajax, delete_route_ajax,
-                    delete_trip_ajax)
+                    delete_trip_ajax, delete_feed_ajax, new_feed)
 
 urlpatterns = patterns(
     '',
@@ -29,5 +29,8 @@ urlpatterns = patterns(
     url(r'gtfs/deletestop.json/', delete_stop_ajax, name='delete_stop_ajax'),
     url(r'gtfs/deleteroute.json/', delete_route_ajax, name='delete_route_ajax'),
     url(r'gtfs/deletetrip.json/', delete_trip_ajax, name='delete_trip_ajax'),
+    url(r'gtfs/deletefeed.json/', delete_feed_ajax, name='delete_feed_ajax'),
+
+    url(r'gtfs/new-feed/$', new_feed, name='new_feed'),
 
 )

@@ -21,7 +21,6 @@ from myapp.views import FeedListView
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', FeedListView.as_view(), name='home'),
-    url(r'^explore', include('exploreapp.urls')),
     url(r'^api/', include('gtfsapi.urls')),
     url(r'^apidocs/', include('rest_framework_swagger.urls')),
     url(r'^explore', include('myapp.urls')),

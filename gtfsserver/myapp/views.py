@@ -24,6 +24,8 @@ from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
 
+from django.core.exceptions import ObjectDoesNotExist
+
 class FeedListView(generic.ListView):
     template_name = 'myapp/feed-list.html'
     context_object_name = 'feed_list'
@@ -293,6 +295,20 @@ def delete_trip_ajax(request, **kwargs):
     return http.HttpResponse(status=400)
 
 
+def delete_feed_ajax(request, **kwargs):
+    if request.method == 'POST' and request.is_ajax():
+        try:
+            feed = Feed.objects.get(pk=request.POST.get('pk'))
+            feed_name = feed.name
+            feed.delete()
+            return http.HttpResponse(
+                content='Trip <strong>{}</strong> has been successfully deleted'.format(feed_name),
+                status=200)
+        except DatabaseError as e:
+            return http.HttpResponse(status=400, content='An error occurred while processing your request')
+    return http.HttpResponse(status=400)
+
+
 def new_route(request, **kwargs):
     if request.method == 'POST':
         try:
@@ -458,4 +474,17 @@ def _trip_post_delete(sender, instance, using, **kwargs):
     It seems shapes are not deleted when trips are deleted. This fixes that by listening on the deletion event
     of a trip and then delete the associated shapes
     '''
-    instance.shape.delete()
+    if instance.shape:
+        instance.shape.delete()
+
+
+def new_feed(request, **kwargs):
+    if request.method == 'POST':
+        request_data = request.POST.dict()
+
+        feed = Feed.objects.create(name=request_data['feed-name'])
+        feed.import_gtfs(request.FILES['feed-file'])
+
+        return http.HttpResponseRedirect(reverse('agency_list', kwargs={'feed_id': feed.id}))
+    return render(request, 'myapp/new-feed.html')
+
