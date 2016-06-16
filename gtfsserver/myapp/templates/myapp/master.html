@@ -110,8 +110,8 @@
     <script id="add-current-stop-item-template" type="text/x-handlebars-template">
         <li>
             <div class="form-group">
-                <a href="#" class="stop" id="name" data-type="text" data-pk="{{ id }}" data-url="{% url 'update_stop_ajax' %}"
-                   data-title="Enter Stop Name"> {{ name }}/a>
+                <a href="#" class="editable" id="name" data-type="text" data-pk="{{ id }}" data-url="{% url 'update_stop_ajax' %}"
+                   data-title="Enter Stop Name"> {{ name }} </a>
                 <input type="hidden" name="stop_id" value="{{ id }}">
 
                 <button type="button" class="close" aria-label="Close"><span

@@ -281,5 +281,16 @@ function insertWaypoint(map, newWaypoint, waypoints) {
         waypoints.splice(index, 0, newWaypoint);
         anchorElement.before(template(context))
     }
+
+    // Refresh editable binding???
+    //HACK
+
+    $('.editable').editable({
+        params: function (params) {
+            //originally params contain pk, name and value
+            params.csrfmiddlewaretoken = '{{ csrf_token }}';
+            return params;
+        }
+    });
     return refreshWaypoints(waypoints);
 }

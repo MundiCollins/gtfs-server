@@ -184,7 +184,7 @@
                 $('#stop-form').submit();
             });
 
-            $('button.close').on('click', function (event) {
+            $('#current-stops').on('click','button.close', function (event) {
                 event.preventDefault();
 
                 var parent = $(this).parent();
@@ -384,7 +384,7 @@
                             <li>
                                 <div class="form-group">
                                     <a href="#" class="editable" id="name" data-type="text" data-pk="{{ stop_time.stop.id }}" data-url="{% url 'update_stop_ajax' %}"
-                                       data-title="Enter Stop Name"> {{ stop_time.stop.name }}</a>
+                                       data-title="Enter Stop Name"> {{ stop_time.stop.name }} </a>
                                     <input type="hidden" name="stop_id" value="{{ stop_time.stop.id }}">
 
                                     <button type="button" class="close" aria-label="Close"><span
