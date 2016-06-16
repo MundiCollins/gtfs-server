@@ -1,0 +1,44 @@
+{% extends 'myapp/master.html' %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <h3 class="sub-header"> New GTFS Feed Information
+            <span class="pull-right">
+                <a href="{% url 'feed_list' %}" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+                    Back to Feed List
+                </a>
+            </span>
+        </h3>
+    </div>
+
+     {% if error_message %}
+            <div class="alert-message alert {{ alert_type }} alert-dismissible fade in" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                    aria-hidden="true">×</span></button>
+            {{ error_message }}
+        </div>
+    {% endif %}
+
+    <form method="post"  enctype="multipart/form-data">
+        {% csrf_token %}
+         <div class="form-group">
+            <label for="feed-name">GTFS Feed Name</label>
+            <input type="text" class="form-control" id="feed-name" name="feed-name" required>
+        </div>
+        <fieldset>
+            Files to upload
+            <div class="form-group">
+                <label for="feed-file">GTFS Feed File (.zip)</label>
+                <input name="feed-file" type="file" accept="application/zip" required>
+                <p class="help-block">
+                    You can use your own file or download one from the GTFS exchange.
+                </p>
+            </div>
+        </fieldset>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{% endblock %}
