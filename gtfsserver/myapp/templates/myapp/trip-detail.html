@@ -38,7 +38,9 @@
             var waypoints = [];
             var wkt = new Wkt.Wkt();
             var wkt_object;
+            var wkt_object_inline;
             var markers;
+            var markers_inline;
             var map = L.map('map',  {crs: L.CRS.EPSG4326});
             var original_route;
             var generated_route;
@@ -60,6 +62,9 @@
                 attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(inline_map);
 
+
+            wkt_object_inline = wkt.toObject();
+            wkt_object_inline.addTo(inline_map);
 
             wkt_object = wkt.toObject();
             wkt_object.addTo(map);
@@ -129,6 +134,9 @@
                 // Plot updated stop markers
                 markers = getMarkersFromWaypoints(waypoints);
                 plotMarkers(markers, map);
+
+                //update inline markers
+                markers_inline = getMarkersFromWaypoints(waypoints);
             });
 
             $('#stop-form').on('submit', function (event) {
@@ -223,10 +231,20 @@
             });
 
             $('#stop-modal').on('shown.bs.modal', function (event) {
-                console.log(event);
                 inline_map.invalidateSize.bind(inline_map);
-                inline_map.fitBounds(wkt_object.getBounds());
+                inline_map.fitBounds(wkt_object_inline.getBounds());
                 inline_map.setZoom(14);
+
+                // Clean up existing stop markers
+                if (markers_inline) {
+                    $.map(markers_inline, function (marker) {
+                        inline_map.removeLayer(marker);
+                    });
+                }
+
+                // Plot updated stop markers
+                markers_inline = getMarkersFromWaypoints(waypoints);
+                plotMarkers(markers_inline, inline_map);
             });
 
             $('.update-stop-list').on('click', function (e) {
