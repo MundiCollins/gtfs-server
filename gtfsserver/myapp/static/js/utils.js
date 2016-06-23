@@ -100,7 +100,7 @@ function generateRoute(routing_server_url, waypoints) {
 function getMarkersFromWaypoints(waypoints) {
     return $.map(waypoints, function (waypoint, index) {
         var markerLocation = new L.LatLng(waypoint.lat, waypoint.lon);
-        var marker = new L.Marker(markerLocation, {title: waypoint.name, draggable: true, index: index});
+        var marker = new L.Marker(markerLocation, {title: waypoint.name, draggable: true, index: index, icon: waypoint.icon});
         marker.on('dragend', function (e) {
             $(document).trigger('markerDragEnd', {index: e.target.options.index, marker: e.target});
         });
