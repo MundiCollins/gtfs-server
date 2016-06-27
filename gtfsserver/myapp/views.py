@@ -23,8 +23,7 @@ from datetime import datetime
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
-
-from django.core.exceptions import ObjectDoesNotExist
+import transitfeed
 
 class FeedListView(generic.ListView):
     template_name = 'myapp/feed-list.html'
@@ -480,10 +479,20 @@ def update_shape_ajax(request, **kwargs):
 def export_feed(request, **kwargs):
     feed = Feed.objects.get(id=kwargs['feed_id'])
     file_name = "{}_{}.zip".format(slugify(feed.name), datetime.now().strftime("%Y%m%d-%H%M%S"))
-    file_path = "/tmp/{}".format(file_name)
-    feed.export_gtfs(file_path)
+    output_path = "/tmp/{}".format(file_name)
+    feed.export_gtfs(output_path)
 
-    temp = file(name=file_path, mode='rb')
+    # Remove unused stops
+    loader = transitfeed.Loader(output_path)
+    schedule = loader.Load()
+
+    for stop_id, stop in schedule.stops.items():
+        if not stop.GetTrips(schedule):
+            del schedule.stops[stop_id]
+
+    schedule.WriteGoogleTransitFeed(output_path)
+    
+    temp = file(name=output_path, mode='rb')
     wrapper = FileWrapper(temp)
     response = http.HttpResponse(wrapper,
                                  content_type='application/zip')  # mimetype is replaced by content_type for django 1.7
