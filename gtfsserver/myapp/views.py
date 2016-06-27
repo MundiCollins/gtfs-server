@@ -100,12 +100,12 @@ def trip_detail_view(request, **kwargs):
     context = dict()
 
     trip = Trip.objects.get(pk=kwargs['pk'])
+    trip.update_geometry()
+
     corridor_prefix = trip.route.route_id[0].zfill(2)
     inbound_status = trip.direction
 
     stops = Stop.objects.filter(parent_station__isnull=True).order_by('name')
-
-    list(stops)  # refresh stops
 
     context['agency_id'] = kwargs['agency_id']
     context['feed_id'] = kwargs['feed_id']
@@ -336,7 +336,6 @@ def new_route(request, **kwargs):
 
             return http.HttpResponseRedirect(reverse('route_detail', kwargs=kwargs))
         except Exception as e:
-            print e.message
             kwargs['alert_type'] = 'alert-danger'
             kwargs['error_message'] = 'An error occurred while processing your request'
 
@@ -449,6 +448,33 @@ def new_trip(request, **kwargs):
             }))
 
     return render(request, 'myapp/new-trip.html', context)
+
+
+def update_shape_ajax(request, **kwargs):
+    if request.method == 'POST':
+        request_params = request.POST.dict()
+
+        shape_id = request_params['id']
+        points = json.loads(request_params['points'])
+
+        try:
+            with transaction.atomic():
+                shape = Shape.objects.get(pk=shape_id)
+                shape_points = shape.points.all()
+                for shape_point in shape_points:
+                    shape_point.delete()
+
+                for idx, point in enumerate(points):
+                    shape_point = ShapePoint(
+                        point='POINT ({} {})'.format(point['lng'], point['lat']),
+                        shape_id=shape.id,
+                        sequence=idx + 1
+                    )
+                    shape_point.save()
+                shape.update_geometry()
+                return http.HttpResponse(content='Shape updated successfully', status=200)
+        except Exception as e:
+            return http.HttpResponse(content='An error occurred while processing your request', status=400)
 
 
 def export_feed(request, **kwargs):

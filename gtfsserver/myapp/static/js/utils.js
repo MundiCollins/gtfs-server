@@ -232,6 +232,23 @@ function delete_trip(url, params){
 }
 
 
+function update_shape(url, params){
+     var request = $.ajax({
+        url: url,
+        method: 'POST',
+        data: params,
+    });
+
+    request.done(function (result) {
+        $(document).trigger('success', {message: 'Shape updated successfully'});
+    });
+
+    request.fail(function (jqXHR, textStatus, error) {
+        $(document).trigger('error', {message: jqXHR.responseText});
+    });
+}
+
+
 function refreshWaypoints(waypoints) {
     return $.map(waypoints, function (waypoint, index) {
         if (index == 0 || index == waypoint.length) {

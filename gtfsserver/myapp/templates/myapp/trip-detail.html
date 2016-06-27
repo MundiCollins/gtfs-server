@@ -32,10 +32,6 @@
     <script src="{% static 'js/leaflet.geometryutil.js' %}"></script>
     <script src="{% static 'js/bootstrap-switch.js' %}"></script>
     <script src="{% static 'js/leaflet.draw.js' %}"></script>
-
-
-
-
     <script>
         $(document).ready(function () {
             var mapzen_tracing = false;
@@ -45,14 +41,14 @@
             var wkt_object_inline;
             var markers;
             var markers_inline;
-            var map = L.map('map',  {crs: L.CRS.EPSG4326});
+            var map = L.map('map', {crs: L.CRS.EPSG4326});
             var original_route;
             var generated_route;
-            var inline_map = L.map('inline-map',  {crs: L.CRS.EPSG4326});
+            var inline_map = L.map('inline-map', {crs: L.CRS.EPSG4326});
             var popup = L.popup();
             var stop_marker = L.marker();
 
-            var RedIconClass =  L.Icon.Default.extend({
+            var RedIconClass = L.Icon.Default.extend({
                 options: {
                     iconUrl: "{% static 'img/marker-icon-red.png' %}"
                 }
@@ -68,6 +64,7 @@
             var blueIcon = new BlueIconClass();
 
             wkt.read('{{ trip.geometry.wkt }}');
+
             // Main map
             Tangram.leafletLayer({
                 scene: 'https://raw.githubusercontent.com/tangrams/cinnabar-style/gh-pages/cinnabar-style.yaml',
@@ -85,30 +82,31 @@
                 edit: {
                     featureGroup: drawnItems
                 },
-                draw: {
-                    polyline: {
-                        shapeOptions: {
-                            color: '#00ff00',
-                            weight: 10
-                        }
-                    }
-                }
+                draw: false,
             });
+
             map.addLayer(drawnItems);
             map.addControl(drawControl);
 
-            //Triggered when a new vector or marker has been created.
+            //Triggered when a vector or marker has been updated.
+            map.on('draw:edited', function (e) {
+                var layers = e.layers;
+                layers.eachLayer(function (layer) {
+                    //do whatever you want, most likely save back to db
+                    bootbox.confirm('Do you want to update the shape file in the database?', function (response) {
+                        if (response){
+                            // Make API Call
+                            var params = {
+                                id: {{ trip.shape.id }},
+                                points: JSON.stringify(layer._latlngs),
+                                csrfmiddlewaretoken: '{{ csrf_token }}',
+                            }
 
-            map.on('draw:created', function (e) {
-                var type = e.layerType,
-                    layer = e.layer;
-
-                if (type === 'marker') {
-                    // Do marker specific actions
-                }
-
-                // Do whatever else you need to. (save to db, add to map etc)
-                map.addLayer(layer);
+                            update_shape('{% url 'update_shape_ajax' %}', params);
+                        }
+                    });
+                    console.log(layer);
+                });
             });
 
             L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
@@ -116,14 +114,12 @@
             }).addTo(inline_map);
 
 
-
-
-
             wkt_object_inline = wkt.toObject();
             wkt_object_inline.addTo(inline_map);
 
             wkt_object = wkt.toObject();
-            wkt_object.addTo(map);
+            wkt_object.addTo(drawnItems);
+
 
             map.fitBounds(wkt_object.getBounds());
 
@@ -148,10 +144,10 @@
             $(document).on('markerDragEnd', function (e, data) {
                 console.log(data);
                 var message = 'Do you want to make this change permananent on the stop <strong>"' + (data.marker.options.title) + '"</strong>?'
-                bootbox.confirm(message, function(response) {
-                    if (!response){
+                bootbox.confirm(message, function (response) {
+                    if (!response) {
                         location.reload();
-                    }else{
+                    } else {
                         var point = wkt.fromObject(data.marker).write();
                         var params = {
                             pk: waypoints[data.index].id,
@@ -177,7 +173,7 @@
 
                 // Plot generated route
                 generated_route = data.route;
-                if(mapzen_tracing){
+                if (mapzen_tracing) {
                     generated_route.addTo(map);
                 }
 
@@ -242,7 +238,7 @@
                 $('#stop-form').submit();
             });
 
-            $('#current-stops').on('click','button.close', function (event) {
+            $('#current-stops').on('click', 'button.close', function (event) {
                 event.preventDefault();
 
                 var parent = $(this).parent();
@@ -250,18 +246,18 @@
                 var stop_name = parent.find('a').html()
                 var index = $('button.close').index($(this)) - 1;
                 if (stop_id) {
-                    bootbox.confirm('Do you want to remove <strong>"' + stop_name + '"</strong> from this trip?', function(response){
-                       if (response){
-                           var message = '<strong>"' + stop_name + '"</strong> removed from this trip. <br/>';
-                           message += 'Click on "Save Stops" to make the change permanent.'
+                    bootbox.confirm('Do you want to remove <strong>"' + stop_name + '"</strong> from this trip?', function (response) {
+                        if (response) {
+                            var message = '<strong>"' + stop_name + '"</strong> removed from this trip. <br/>';
+                            message += 'Click on "Save Stops" to make the change permanent.'
 
-                           waypoints.splice(index, 1);
-                           parent.parent().remove();
+                            waypoints.splice(index, 1);
+                            parent.parent().remove();
 
-                           $(document).trigger('success', {'message': message})
+                            $(document).trigger('success', {'message': message})
 
-                            bootbox.confirm('Do you want to remove <strong>"' + stop_name + '"</strong>  from the database?', function(response){
-                                if (response){
+                            bootbox.confirm('Do you want to remove <strong>"' + stop_name + '"</strong>  from the database?', function (response) {
+                                if (response) {
                                     var params = {
                                         csrfmiddlewaretoken: '{{ csrf_token }}',
                                         pk: stop_id
@@ -269,7 +265,7 @@
                                     delete_stop('{% url 'delete_stop_ajax' %}', params);
                                 }
                             });
-                       }
+                        }
                     });
                 }
             });
@@ -330,16 +326,14 @@
             // End work on inline map
 
             $('#mapzen-switch').bootstrapSwitch();
-            $('#mapzen-switch').on('switchChange.bootstrapSwitch', function(event, state){
+            $('#mapzen-switch').on('switchChange.bootstrapSwitch', function (event, state) {
                 mapzen_tracing = state;
-                if (generated_route){
-                    if (state){
+                if (generated_route) {
+                    if (state) {
                         generated_route.addTo(map);
-                    }else{
+                    } else {
                         map.removeLayer(generated_route);
                     }
-                }
-                if(state && generated_route){
                 }
             });
         });
@@ -348,8 +342,8 @@
 
 
 {% block content %}
-     {% if error_message %}
-            <div class="alert-message alert {{ alert_type }} alert-dismissible fade in" role="alert">
+    {% if error_message %}
+        <div class="alert-message alert {{ alert_type }} alert-dismissible fade in" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
                     aria-hidden="true">×</span></button>
             {{ error_message }}
@@ -407,15 +401,17 @@
     </div>
     <div class="row">
         <div id="alert"></div>
-        <h3 class="sub-header"> Route: {{ trip.route.desc }} | Destination: {{ trip.headsign }}
-            <span class="pull-right">
+        <h2 class="sub-header"> Route: {{ trip.route.desc }} | Destination: {{ trip.headsign }}</h2>
+        <div class="row">
+             <span class="pull-right">
                 <form class="form-inline">
                     <div class="checkbox">
                         <label>
                            Mapzen Tracing: <input type="checkbox" id="mapzen-switch">
                         </label>
                     </div>
-                    <a href="{% url 'route_detail' feed_id=feed_id agency_id=agency_id pk=route_id %}" class="btn btn-primary">
+                    <a href="{% url 'route_detail' feed_id=feed_id agency_id=agency_id pk=route_id %}"
+                       class="btn btn-primary">
                         <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
                         Back to Route
                     </a>
@@ -426,7 +422,9 @@
                 </form>
 
             </span>
-        </h3>
+
+        </div>
+
         <div id="map-container" class="col-lg-8">
             <div id="map">
 
@@ -442,7 +440,8 @@
                         {% for stop_time in trip.stoptime_set.all|dictsort:'stop_sequence' %}
                             <li>
                                 <div class="form-group">
-                                    <a href="#" class="editable" id="name" data-type="text" data-pk="{{ stop_time.stop.id }}" data-url="{% url 'update_stop_ajax' %}"
+                                    <a href="#" class="editable" id="name" data-type="text"
+                                       data-pk="{{ stop_time.stop.id }}" data-url="{% url 'update_stop_ajax' %}"
                                        data-title="Enter Stop Name"> {{ stop_time.stop.name }} </a>
                                     <input type="hidden" name="stop_id" value="{{ stop_time.stop.id }}">
 
