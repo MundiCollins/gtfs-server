@@ -482,16 +482,6 @@ def export_feed(request, **kwargs):
     output_path = "/tmp/{}".format(file_name)
     feed.export_gtfs(output_path)
 
-    # Remove unused stops
-    loader = transitfeed.Loader(output_path)
-    schedule = loader.Load()
-
-    for stop_id, stop in schedule.stops.items():
-        if not stop.GetTrips(schedule):
-            del schedule.stops[stop_id]
-
-    schedule.WriteGoogleTransitFeed(output_path)
-    
     temp = file(name=output_path, mode='rb')
     wrapper = FileWrapper(temp)
     response = http.HttpResponse(wrapper,
