@@ -124,6 +124,18 @@ function updateStop(url, data) {
     });
 }
 
+
+function updateTrip(url, data) {
+    var jqxhr = $.post(url, data, function (stop) {
+        $(document).trigger('success', {message: "Successfully updated trip"})
+    }, 'json');
+
+    jqxhr.fail(function (jqXHR, status, error) {
+        $(document).trigger('error', {message: 'Failed due to: ' + status + " " + error});
+        console.log(jqXHR.responseText);
+    });
+}
+
 function fetch_and_populate_stops(url, params, list_element) {
     var wkt = new Wkt.Wkt();
     var request = $.ajax({

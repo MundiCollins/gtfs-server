@@ -336,6 +336,20 @@
                     }
                 }
             });
+
+            $('#verified-switch').bootstrapSwitch({
+                state: {{trip.is_approved|lower}} ,
+                onText: 'YES',
+                offText: 'NO'
+            });
+            $('#verified-switch').on('switchChange.bootstrapSwitch', function (event, state) {
+                var params = {
+                    pk: {{ trip.id }},
+                    is_approved: state,
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                }
+                updateTrip('{% url 'update_trip_ajax' %}', params);
+            });
         });
     </script>
 {% endblock %}
@@ -407,7 +421,12 @@
                 <form class="form-inline">
                     <div class="checkbox">
                         <label>
-                           Mapzen Tracing: <input type="checkbox" id="mapzen-switch">
+                           <strong>Mapzen Tracing:</strong> <input type="checkbox" id="mapzen-switch">
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                           <strong>Trip Verified:</strong> <input type="checkbox" id="verified-switch">
                         </label>
                     </div>
                     <a href="{% url 'route_detail' feed_id=feed_id agency_id=agency_id pk=route_id %}"
