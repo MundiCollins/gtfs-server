@@ -25,6 +25,19 @@ from django.dispatch import receiver
 
 import transitfeed
 
+
+class DictReaderStrip(csv.DictReader):
+    @property
+    def fieldnames(self):
+        if self._fieldnames is None:
+            # Initialize self._fieldnames
+            # Note: DictReader is an old-style class, so can't use super()
+            csv.DictReader.fieldnames.fget(self)
+            if self._fieldnames is not None:
+                self._fieldnames = [name.strip() for name in self._fieldnames]
+        return self._fieldnames
+
+
 class FeedListView(generic.ListView):
     template_name = 'myapp/feed-list.html'
     context_object_name = 'feed_list'
@@ -353,7 +366,7 @@ def new_trip(request, **kwargs):
         request_params = request.POST.dict()
 
         shape_file = shapefile.Reader(shp=request.FILES['shape-file'], dbf=request.FILES['shape-file-dbf'])
-        stops_reader = csv.DictReader(request.FILES['stops-file'])
+        stops_reader = DictReaderStrip(request.FILES['stops-file'])
 
         # Check required fields are present in the stops csv
         expected_fields = set(['stop_sequence', 'lat', 'lon', 'stop_name', 'designation', 'location_type'])
