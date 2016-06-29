@@ -360,7 +360,8 @@ def new_trip(request, **kwargs):
         current_fields = set(stops_reader.fieldnames)
 
         if not expected_fields.issubset(current_fields):
-            context['error_message'] = 'The following columns are missing from the uploaded stops file: {}.'
+            missing_fields = expected_fields.difference(current_fields)
+            context['error_message'] = 'The following columns are missing from the uploaded stops file: {}.'.format(missing_fields)
             return render(request, 'myapp/new-trip.html', context)
 
         # Trip variables
