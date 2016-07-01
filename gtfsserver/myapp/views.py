@@ -435,7 +435,7 @@ def new_trip(request, **kwargs):
                 stop_suffix = "".join(tmp[:3])  # pick 3 characters from the shuffled stop name
 
                 stop, created = Stop.objects.get_or_create(
-                    point__equals = geos.fromstr('POINT({} {})'.format(row['lon'], row['lat']), srid=4326),
+                    point = geos.fromstr('POINT({} {})'.format(row['lon'], row['lat'])),
                     feed_id = kwargs['feed_id'],
                     defaults = {
                         'stop_id': '{}{}{}{}'.format(corridor.zfill(2), row['designation'] or 0, direction, stop_suffix),
@@ -443,21 +443,6 @@ def new_trip(request, **kwargs):
                         'location_type' : row['location_type'],
                     }
                 )
-
-                if created:
-                    print "Existing Stop"
-                else:
-                    print "New Stop"
-
-                '''
-                stop = Stop(
-                    stop_id='{}{}{}{}'.format(corridor.zfill(2), row['designation'] or 0, direction, stop_suffix),
-                    name=row['stop_name'],
-                    point='POINT({} {})'.format(row['lon'], row['lat']),
-                    location_type=row['location_type'],
-                    feed_id=kwargs['feed_id']
-                )
-                '''
 
                 trip.stoptime_set.add(StopTime(stop_id=stop.id,
                                                trip_id=trip.id,
