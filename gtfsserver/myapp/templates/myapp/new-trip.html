@@ -66,7 +66,7 @@
         <fieldset>
             Files to upload
             <div class="form-group">
-                <label for="stops-file">Stop File (.csv)</label>
+                <label for="stops-file">Stop File (*_stops.csv)</label>
                 <input name="stops-file" type="file" accept="text/csv" required>
                 <p class="help-block">
                     **Before uploading this file, ensure that:
@@ -76,7 +76,7 @@
                         <li>You add a new column <strong>location_type</strong> with a value of 1 for stations</li>
 
                     </ol>
-                    Critical columns in this file are: <strong>stop_name, lat, lon, stop_sequence</strong>
+                    Critical columns in this file are: <strong>stop_name, lat, lon, stop_sequence, designation, location_type</strong>
                 </p>
                 <p class="help-block">
                     <div id="defaults-change-alert" class="alert alert-warning" role="alert">
@@ -89,11 +89,11 @@
                 </p>
             </div>
             <div class="form-group">
-                <label for="shape-file">Shape File (.shp)</label>
+                <label for="shape-file">Shape File (*_route.shp)</label>
                 <input name="shape-file" type="file" accept="*.shp" required>
             </div>
             <div class="form-group">
-                <label for="shape-file-dbf">Shape File Database File (.dbf)</label>
+                <label for="shape-file-dbf">Shape File Database File (*_route.dbf)</label>
                 <input name="shape-file-dbf" type="file" accept="*.dbf" required>
             </div>
         </fieldset>
