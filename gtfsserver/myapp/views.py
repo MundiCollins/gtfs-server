@@ -25,6 +25,8 @@ from django.dispatch import receiver
 
 from django.contrib.gis import geos
 
+from django.core.exceptions import  ObjectDoesNotExist
+
 import transitfeed
 
 
@@ -515,8 +517,12 @@ def _trip_post_delete(sender, instance, using, **kwargs):
     It seems shapes are not deleted when trips are deleted. This fixes that by listening on the deletion event
     of a trip and then delete the associated shapes
     '''
-    if instance.shape:
-        instance.shape.delete()
+    try:
+        if instance.shape:
+            instance.shape.delete()
+    except ObjectDoesNotExist as e:
+        pass
+
 
 
 def new_feed(request, **kwargs):
