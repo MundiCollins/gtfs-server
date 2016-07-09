@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import unicode_literals
+
+import csv
+
 from codecs import BOM_UTF8
 from collections import defaultdict
 from csv import reader, writer
@@ -110,6 +113,14 @@ class Base(models.Model):
 
     # The relation of the model to the feed it belongs to.
     _rel_to_feed = 'feed'
+
+    @classmethod
+    def _unfussy_reader(cls, csv_reader):
+        while True:
+            try:
+                yield next(csv_reader)
+            except csv.Error:
+                continue
 
     @classmethod
     def import_txt(cls, txt_file, feed, filter_func=None):
@@ -227,7 +238,7 @@ class Base(models.Model):
         else:  # pragma: no cover
             bom = BOM_UTF8
         new_objects = []
-        for row in csv_reader:
+        for row in cls._unfussy_reader(csv_reader):
             if first:
                 # Read the columns
                 columns = row
