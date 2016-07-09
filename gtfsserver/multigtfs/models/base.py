@@ -115,14 +115,6 @@ class Base(models.Model):
     _rel_to_feed = 'feed'
 
     @classmethod
-    def _unfussy_reader(cls, csv_reader):
-        while True:
-            try:
-                yield next(csv_reader)
-            except csv.Error:
-                continue
-
-    @classmethod
     def import_txt(cls, txt_file, feed, filter_func=None):
         '''Import from the GTFS text file'''
 
@@ -141,6 +133,13 @@ class Base(models.Model):
         def point_convert(value): return (value or 0.0)
 
         cache = {}
+
+        def unfussy_csv_reader(csv_reader):
+            while True:
+                try:
+                    yield next(csv_reader)
+                except csv.Error:
+                    continue
 
         def default_convert(field):
             def get_value_or_default(value):
@@ -238,7 +237,7 @@ class Base(models.Model):
         else:  # pragma: no cover
             bom = BOM_UTF8
         new_objects = []
-        for row in cls._unfussy_reader(csv_reader):
+        for row in unfussy_csv_reader(csv_reader):
             if first:
                 # Read the columns
                 columns = row
