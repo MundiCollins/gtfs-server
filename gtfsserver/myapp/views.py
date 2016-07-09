@@ -48,6 +48,19 @@ class FeedListView(generic.ListView):
     model = Feed
     paginate_by = 10
 
+    def get_context_data(self, **kwargs):
+        context = super(FeedListView, self).get_context_data(**kwargs)
+        request_params = self.request.GET.copy()
+        if 'page' in request_params:
+            del request_params['page']
+
+        request_params = filter(itemgetter(1), request_params.items())
+
+        if request_params:
+            context['request_params'] = request_params
+        return context
+
+
 
 class AgencyListView(generic.ListView):
     template_name = 'myapp/agency-list.html'
@@ -57,6 +70,15 @@ class AgencyListView(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super(AgencyListView, self).get_context_data(**kwargs)
+        request_params = self.request.GET.copy()
+        if 'page' in request_params:
+            del request_params['page']
+
+        request_params = filter(itemgetter(1), request_params.items())
+
+        if request_params:
+            context['request_params'] = request_params
+            
         context['feed_id'] = self.kwargs['feed_id']
         return context
 
@@ -529,8 +551,9 @@ def new_feed(request, **kwargs):
     if request.method == 'POST':
         request_data = request.POST.dict()
 
-        feed = Feed.objects.create(name=request_data['feed-name'])
-        feed.import_gtfs(request.FILES['feed-file'])
+        with transaction.atomic():
+            feed = Feed.objects.create(name=request_data['feed-name'])
+            feed.import_gtfs(request.FILES['feed-file'])
 
         return http.HttpResponseRedirect(reverse('agency_list', kwargs={'feed_id': feed.id}))
     return render(request, 'myapp/new-feed.html')
