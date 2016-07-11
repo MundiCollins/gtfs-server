@@ -78,17 +78,20 @@ function generateRoute(routing_server_url, waypoints) {
         if (promises.length == 1) {
             arguments = [arguments]
         }
+        try {
+            for (var i = 0; i < arguments.length; i++) {
+                var json = JSON.parse(arguments[i][0]);
+                route = route.concat(decodePolyline(json.trip.legs[0].shape));
+            }
+        } catch (e) {}
 
-        for (var i = 0; i < arguments.length; i++) {
-            var json = JSON.parse(arguments[i][0]);
-            route = route.concat(decodePolyline(json.trip.legs[0].shape));
-        }
-        var polyline = L.polyline(route, {
-            color: 'red',
-            weight: 5,
-            opacity: 0.5,
-            smoothFactor: 1
-        });
+         var polyline = L.polyline(route, {
+                color: 'red',
+                weight: 5,
+                opacity: 0.5,
+                smoothFactor: 1
+            });
+
         $(document).trigger('routeGenerated', {route: polyline, waypoints: waypoints});
 
     }).fail(function (jqXHR, status, error) {
