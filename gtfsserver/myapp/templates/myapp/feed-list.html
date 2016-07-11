@@ -18,6 +18,9 @@
             <tr>
                 <th>#</th>
                 <th>Feed Name</th>
+                <th>Publisher Name</th>
+                <th>Publisher URL</th>
+                <th>Valid Until</th>
                 <th></th>
             </tr>
         </thead>
@@ -25,7 +28,15 @@
             {% for feed in feed_list %}
             <tr>
                 <td>{{ feed.id }}</td>
-                <td>{{ feed.name }}</td>
+
+                <td> <a href="#" class="editable" id="name" data-type="text" data-pk="{{ feed.id }}" data-url="{% url 'update_feed_ajax' %}"
+                                       data-title="Enter Feed Name">{{ feed.name }}</a></td>
+                <td> <a href="#" class="editable" id="publisher_name" data-type="text" data-pk="{{ feed.id }}" data-url="{% url 'update_feed_ajax' %}"
+                                       data-title="Enter Publisher Name">{{ feed.feedinfo_set.get.publisher_name }}</a></td>
+                <td> <a href="#" class="editable" id="publisher_url" data-type="text" data-pk="{{ feed.id }}" data-url="{% url 'update_feed_ajax' %}"
+                                       data-title="Enter Publisher URL">{{ feed.feedinfo_set.get.publisher_url }}</a></td>
+                <td> <a href="#" class="editable" id="end_date" data-type="date"  data-viewformat="yyyy-mm-dd" data-pk="{{ feed.id }}" data-url="{% url 'update_feed_ajax' %}"
+                                       data-title="Enter Feed Expirty Date" data-placement="bottom">{{ feed.feedinfo_set.get.end_date|date:"Y-m-d" }}</a></td>
                 <td>
                     <a href="{% url 'agency_list' feed_id=feed.id %}" class="btn btn-primary btn-sm">View Agencies
                             <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
@@ -60,8 +71,7 @@
                         csrfmiddlewaretoken: '{{ csrf_token }}',
                         pk: feed_pk
                     }
-                    delete_trip('{% url '
-                        delete_feed_ajax ' %}', params);
+                    delete_trip('{% url 'delete_feed_ajax' %}', params);
                 }
             });
         });

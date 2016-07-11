@@ -335,6 +335,16 @@
                         map.removeLayer(generated_route);
                     }
                 }
+
+                console.log(generated_route.getLatLngs());
+                console.log(state);
+
+                if(!(generated_route.getLatLngs().length > 0) && state){
+                    var message = "Mapzen Valhalla could not trace this route <br/>";
+                        message += "It is possible that the route as is is <strong>outdated and no longer valid</strong>. <br/>";
+                        message += "Do confirm this with on-ground staff / matatu operators";
+                    bootbox.alert(message)
+                }
             });
 
             $('#verified-switch').bootstrapSwitch({

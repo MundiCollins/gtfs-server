@@ -13,7 +13,7 @@ from django.shortcuts import render
 from django.views import generic
 from django.db.utils import DatabaseError
 
-from multigtfs.models import Agency, Route, Stop, Feed, Service, Trip, StopTime, Shape, ShapePoint
+from multigtfs.models import Agency, Route, Stop, Feed, FeedInfo, Service, Trip, StopTime, Shape, ShapePoint
 from .mixins import AJAXListMixin
 import random
 from django.template.defaultfilters import slugify
@@ -59,7 +59,6 @@ class FeedListView(generic.ListView):
         if request_params:
             context['request_params'] = request_params
         return context
-
 
 
 class AgencyListView(generic.ListView):
@@ -221,6 +220,7 @@ def get_route_ajax(request, **kwargs):
         params['api_key'] = urllib.unquote(str(request.GET.get('api_key')))
 
         url = 'https://valhalla.mapzen.com/route?api_key={api_key}&json={json}'.format(**params)
+
         response = requests.get(url)
 
         return http.HttpResponse(status=200, content=response.text)
@@ -283,6 +283,34 @@ def update_trip_ajax(request, **kwargs):
         except DatabaseError as e:
             return http.HttpResponse(status=400, content='An error occurred while processing your request')
     return http.HttpResponse(status=400)
+
+
+def update_agency_ajax(request, **kwargs):
+    if request.method == 'POST' and request.is_ajax():
+        try:
+            trip = _update_ajax(Agency, request)
+            return http.HttpResponse(json.dumps({'pk': trip.id}), status=201)
+        except DatabaseError as e:
+            return http.HttpResponse(status=400, content='An error occurred while processing your request')
+    return http.HttpResponse(status=400)
+
+
+def update_feed_ajax(request, **kwargs):
+    if request.method == 'POST' and request.is_ajax():
+        pk, request_params = parse_update_params(request.POST.dict())
+
+        try:
+            if 'name' in request_params:
+                Feed.objects.filter(pk=pk).update(**request_params)
+
+                del request_params['name']
+
+            FeedInfo.objects.filter(feed_id=pk).update(**request_params)
+            return http.HttpResponse(status=200)
+        except DatabaseError as e:
+            return http.HttpResponse(status=400, content='An error occurred while processing your request')
+    return http.HttpResponse(status=400)
+
 
 
 def delete_stop_ajax(request, **kwargs):
@@ -546,15 +574,17 @@ def _trip_post_delete(sender, instance, using, **kwargs):
         pass
 
 
-
 def new_feed(request, **kwargs):
+    error_message = None
     if request.method == 'POST':
         request_data = request.POST.dict()
 
-        with transaction.atomic():
-            feed = Feed.objects.create(name=request_data['feed-name'])
-            feed.import_gtfs(request.FILES['feed-file'])
-
-        return http.HttpResponseRedirect(reverse('agency_list', kwargs={'feed_id': feed.id}))
-    return render(request, 'myapp/new-feed.html')
+        try:
+            with transaction.atomic():
+                feed = Feed.objects.create(name=request_data['feed-name'])
+                feed.import_gtfs(request.FILES['feed-file'])
+                return http.HttpResponseRedirect(reverse('agency_list', kwargs={'feed_id': feed.id}))
+        except:
+            error_message = "Something went wrong while processing your upload. Please try again later"
+    return render(request, 'myapp/new-feed.html', {'error_message': error_message})
 

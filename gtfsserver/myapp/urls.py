@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url
 
 from .views import (AgencyListView, RouteListView, RouteDetailView, FeedListView, StopListJSONView,
                     trip_detail_view, add_stop_ajax, get_route_ajax, update_stop_ajax, delete_stop_ajax,
-                    new_route, new_trip, export_feed, update_route_ajax, update_trip_ajax, update_shape_ajax,
+                    new_route, new_trip, export_feed, update_agency_ajax, update_feed_ajax, update_route_ajax, update_trip_ajax, update_shape_ajax,
                     delete_route_ajax, delete_trip_ajax, delete_feed_ajax, new_feed)
 
 urlpatterns = patterns(
@@ -26,6 +26,8 @@ urlpatterns = patterns(
     url(r'gtfs/updateroute.json/', update_route_ajax, name='update_route_ajax'),
     url(r'gtfs/updatetrip.json/', update_trip_ajax, name='update_trip_ajax'),
     url(r'gtfs/updateshape.json/', update_shape_ajax, name='update_shape_ajax'),
+    url(r'gtfs/updatefeed.json/', update_feed_ajax, name='update_feed_ajax'),
+    url(r'gtfs/updateagency.json/', update_agency_ajax, name='update_agency_ajax'),
 
     url(r'gtfs/deletestop.json/', delete_stop_ajax, name='delete_stop_ajax'),
     url(r'gtfs/deleteroute.json/', delete_route_ajax, name='delete_route_ajax'),
