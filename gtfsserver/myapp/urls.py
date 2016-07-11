@@ -35,5 +35,4 @@ urlpatterns = patterns(
     url(r'gtfs/deletefeed.json/', delete_feed_ajax, name='delete_feed_ajax'),
 
     url(r'gtfs/new-feed/$', new_feed, name='new_feed'),
-
 )

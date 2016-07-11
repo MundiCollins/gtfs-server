@@ -22,12 +22,8 @@ from datetime import datetime
 
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
-
 from django.contrib.gis import geos
-
 from django.core.exceptions import  ObjectDoesNotExist
-
-import transitfeed
 
 
 class DictReaderStrip(csv.DictReader):

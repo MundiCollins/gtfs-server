@@ -347,6 +347,8 @@
                 }
             });
 
+            console.log({{trip.is_approved|lower}})
+
             $('#verified-switch').bootstrapSwitch({
                 state: {{trip.is_approved|lower}} ,
                 onText: 'YES',
@@ -355,10 +357,11 @@
             $('#verified-switch').on('switchChange.bootstrapSwitch', function (event, state) {
                 var params = {
                     pk: {{ trip.id }},
-                    is_approved: state,
+                    is_approved: state ? 1 : '',
                     csrfmiddlewaretoken: '{{ csrf_token }}',
                 }
                 updateTrip('{% url 'update_trip_ajax' %}', params);
+                console.log(params);
             });
         });
     </script>
@@ -436,7 +439,7 @@
                     </div>
                     <div class="checkbox">
                         <label>
-                           <strong>Trip Verified:</strong> <input type="checkbox" id="verified-switch">
+                           <strong>Trip Verified:</strong> <input type="checkbox" id="verified-switch" {{user.is_staff|yesno:","}}>
                         </label>
                     </div>
                     <a href="{% url 'route_detail' feed_id=feed_id agency_id=agency_id pk=route_id %}"
@@ -469,31 +472,33 @@
                         {% for stop_time in trip.stoptime_set.all|dictsort:'stop_sequence' %}
                             <li>
                                 <div class="form-group">
-                                    <a href="#" class="editable" id="name" data-type="text"
+                                    <a href="#" class="{{user.is_staff|yesno:"editable,"}}" id="name" data-type="text"
                                        data-pk="{{ stop_time.stop.id }}" data-url="{% url 'update_stop_ajax' %}"
                                        data-title="Enter Stop Name"> {{ stop_time.stop.name }} </a>
                                     <input type="hidden" name="stop_id" value="{{ stop_time.stop.id }}">
 
+                                    {% if user.is_staff %}
                                     <button type="button" class="close" aria-label="Close"><span
                                             aria-hidden="true">&times;</span></button>
+                                    {% endif %}
                                 </div>
                             </li>
                         {% endfor %}
                         {% csrf_token %}
                     </ul>
-                    <button type="submit" class="btn btn-success">Save Stops&nbsp;<i
+                    <button type="submit" class="btn btn-success {{user.is_staff|yesno:",disabled"}}">Save Stops&nbsp;<i
                             class="glyphicon glyphicon-plus"></i></button>
                 </form>
             </div>
             <div class="row">
                 <h4>Select a stop from an existing Route </h4>
-                <button type="button" class="btn btn-primary btn-sm update-stop-list pull-left" data-target="#stops">
+                <button type="button" class="btn btn-primary btn-sm update-stop-list pull-left {{user.is_staff|yesno:",disabled"}}" data-target="#stops">
                     &nbsp;<i
                         class="glyphicon glyphicon-refresh"></i></button>
-                <select id="stops" class="col-sm-7 col-md-8 input-sm">
+                <select id="stops" class="col-sm-7 col-md-8 input-sm {{user.is_staff|yesno:",disabled"}}">
                     <option>--</option>
                 </select>
-                <button type="button" class="btn btn-success btn-sm add-stop-to-list" data-target="#stops">&nbsp;<i
+                <button type="button" class="btn btn-success btn-sm add-stop-to-list {{user.is_staff|yesno:",disabled"}}" data-target="#stops">&nbsp;<i
                         class="glyphicon glyphicon-plus"></i></button>
 
             </div>

@@ -37,10 +37,10 @@
             {% for route in route_list.all %}
                 <tr>
                     <td>{{ route.route_id }}</td>
-                    <td> <a href="#" class="editable" id="short_name" data-type="text" data-pk="{{ route.id }}" data-url="{% url 'update_route_ajax' %}"
+                    <td> <a href="#" class="{{user.is_staff|yesno:"editable,"}}" id="short_name" data-type="text" data-pk="{{ route.id }}" data-url="{% url 'update_route_ajax' %}"
                                        data-title="Enter Route Number">{{ route.short_name }}</a>
                        </td>
-                    <td><a href="#" class="editable" id="desc" data-type="text" data-pk="{{ route.id }}" data-url="{% url 'update_route_ajax' %}"
+                    <td><a href="#" class="{{user.is_staff|yesno:"editable,"}}" id="desc" data-type="text" data-pk="{{ route.id }}" data-url="{% url 'update_route_ajax' %}"
                                        data-title="Enter Route Description">{{ route.desc }}</a></td>
                     <td>
                         <a href="{% url 'route_detail' feed_id=feed_id agency_id=agency_id pk=route.id %}"
@@ -48,7 +48,7 @@
                             <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
                         </a>
                         <a href="{% url 'delete_route_ajax'%}" data-pk="{{ route.id }}" data-desc="{{ route.desc }}"
-                           class="btn btn-danger btn-sm delete-route">Delete
+                           class="btn btn-danger btn-sm delete-route {{user.is_staff|yesno:",disabled"}}">Delete
                             <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
                         </a>
                     </td>

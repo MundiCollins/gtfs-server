@@ -26,11 +26,11 @@
             {% for agency in agency_list %}
             <tr>
                 <td>{{ agency.id }}</td>
-                <td><a href="#" class="editable" id="name" data-type="text" data-pk="{{ agency.id }}" data-url="{% url 'update_agency_ajax' %}"
+                <td><a href="#" class="{{user.is_staff|yesno:"editable,"}}" id="name" data-type="text" data-pk="{{ agency.id }}" data-url="{% url 'update_agency_ajax' %}"
                                        data-title="Enter Agency Name">{{ agency.name }}</a></td>
-                <td><a href="#" class="editable" id="phone" data-type="text" data-pk="{{ agency.id }}" data-url="{% url 'update_agency_ajax' %}"
+                <td><a href="#" class="{{user.is_staff|yesno:"editable,"}}" id="phone" data-type="text" data-pk="{{ agency.id }}" data-url="{% url 'update_agency_ajax' %}"
                                        data-title="Enter Agency Phone Number">{{ agency.phone }}</a></td>
-                <td><a href="#" class="editable" id="url" data-type="text" data-pk="{{ agency.id }}" data-url="{% url 'update_agency_ajax' %}"
+                <td><a href="#" class="{{user.is_staff|yesno:"editable,"}}" id="url" data-type="text" data-pk="{{ agency.id }}" data-url="{% url 'update_agency_ajax' %}"
                                        data-title="Enter Agency URL">{{ agency.url }}</a></td>
                 <td>
                     <a href="{% url 'route_list' feed_id=feed_id agency_id=agency.id %}" class="btn btn-primary btn-sm">View Routes

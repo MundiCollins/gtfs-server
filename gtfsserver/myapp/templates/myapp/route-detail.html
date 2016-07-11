@@ -32,7 +32,7 @@
             {% for trip in route.trip_set.all %}
                 <tr>
                     <td>{{ trip.trip_id }}</td>
-                    <td> <a href="#" class="editable" id="headsign" data-type="text" data-pk="{{ trip.id }}" data-url="{% url 'update_trip_ajax' %}"
+                    <td> <a href="#" class="{{user.is_staff|yesno:"editable,"}}" id="headsign" data-type="text" data-pk="{{ trip.id }}" data-url="{% url 'update_trip_ajax' %}"
                                        data-title="Enter Destination"> <span>{{ trip.headsign }}</span></a></td>
                     <td>
                         <a href="{% url 'trip_detail' feed_id=feed_id agency_id=agency_id route_id=route.id pk=trip.id %}"
@@ -40,7 +40,7 @@
                             <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
                         </a>
                         <a href="{% url 'delete_trip_ajax'%}" data-pk="{{ trip.id }}" data-headsign="{{ trip.headsign }}"
-                           class="btn btn-danger btn-sm delete-trip">Delete
+                           class="btn btn-danger btn-sm delete-trip {{user.is_staff|yesno:",disabled"}}">Delete
                             <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
                         </a>
                     </td>
