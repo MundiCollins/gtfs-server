@@ -41,7 +41,8 @@
                     <a href="{% url 'agency_list' feed_id=feed.id %}" class="btn btn-primary btn-sm">View Agencies
                             <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
                         </a>
-                    <a href="{% url 'delete_feed_ajax'%}" data-pk="{{ feed.id }}" data-feed-name="{{ feed.name }}" class="btn btn-danger btn-sm delete-trip">Delete
+                    <a href="{% url 'delete_feed_ajax'%}" data-pk="{{ feed.id }}" data-feed-name="{{ feed.name }}"
+                       class="btn btn-danger btn-sm delete-trip {{user.is_staff|yesno:",disabled"}}">Delete
                             <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
                         </a>
                 </td>

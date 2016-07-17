@@ -49,6 +49,7 @@ class Agency(Base):
         blank=True, help_text="URL for purchasing tickets online")
     extra_data = JSONField(default={}, blank=True, null=True)
 
+
     def __str__(self):
         return u"%d-%s" % (self.feed.id, self.agency_id)
 

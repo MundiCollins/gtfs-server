@@ -46,11 +46,10 @@ INSTALLED_APPS = (
     'rest_framework',
     'debug_toolbar',
     'multigtfs',
-    'exploreapp',
     'rest_framework_swagger',
     'myapp',
     'stronghold',
-    'crispy_forms'
+    'simple_history'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -63,8 +62,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'stronghold.middleware.LoginRequiredMiddleware'
-
+    'stronghold.middleware.LoginRequiredMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 )
 
 ROOT_URLCONF = 'gtfsserver.urls'

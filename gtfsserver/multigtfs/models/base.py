@@ -29,6 +29,8 @@ from django.db.models.fields.related import ManyToManyField
 from django.utils.six import StringIO, text_type, PY3
 
 from multigtfs.compat import get_blank_value
+from simple_history.models import HistoricalRecords
+
 
 logger = getLogger(__name__)
 re_point = re.compile(r'(?P<name>point)\[(?P<index>\d)\]')
@@ -110,6 +112,8 @@ class Base(models.Model):
         app_label = 'multigtfs'
 
     objects = BaseManager()
+    history = HistoricalRecords(inherit=True)
+
 
     # The relation of the model to the feed it belongs to.
     _rel_to_feed = 'feed'
