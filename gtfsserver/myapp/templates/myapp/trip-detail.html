@@ -97,7 +97,7 @@
                         if (response){
                             // Make API Call
                             var params = {
-                                id: {{ trip.shape.id }},
+                                id: "{{ trip.shape.id }}",
                                 points: JSON.stringify(layer._latlngs),
                                 csrfmiddlewaretoken: '{{ csrf_token }}',
                             }
@@ -105,7 +105,6 @@
                             update_shape('{% url 'update_shape_ajax' %}', params);
                         }
                     });
-                    console.log(layer);
                 });
             });
 
