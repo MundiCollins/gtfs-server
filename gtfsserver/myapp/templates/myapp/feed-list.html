@@ -42,7 +42,7 @@
                             <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
                         </a>
                     <a href="{% url 'delete_feed_ajax'%}" data-pk="{{ feed.id }}" data-feed-name="{{ feed.name }}"
-                       class="btn btn-danger btn-sm delete-trip {{user.is_staff|yesno:",disabled"}}">Delete
+                       class="btn btn-danger btn-sm delete-trip {{user.is_superuser|yesno:",disabled"}}">Delete
                             <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
                         </a>
                 </td>
