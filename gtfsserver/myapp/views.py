@@ -99,10 +99,11 @@ class RouteListView(generic.ListView):
         if 'page' in request_params:
             del request_params['page']
 
-        request_params = filter(itemgetter(1), request_params.items())
+        # request_params = filter(itemgetter(1), request_params.items())
 
         if request_params:
             context['request_params'] = request_params
+
         return context
 
     def get_queryset(self):
