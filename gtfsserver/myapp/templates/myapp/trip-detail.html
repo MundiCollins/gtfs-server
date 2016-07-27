@@ -306,7 +306,12 @@
                     inbound_status: '{{ inbound_status }}',
                     corridor: '{{ corridor }}'
                 }
-                fetch_and_populate_stops('{% url 'get_stop_list_ajax' %}', params, $(this).data('target'));
+                fetch_and_populate_stops('{% url 'get_stop_list_ajax' feed_id=feed_id %}', params, $(this).data('target'));
+            });
+
+            $('.update-parent-stop-list').on('click', function (e) {
+                var params = {};
+                fetch_and_populate_stops('{% url 'get_parent_stop_list_ajax' feed_id=feed_id %}', params, $(this).data('target'));
             });
 
             $('.add-stop-to-list').on('click', function () {
@@ -402,7 +407,7 @@
                                 <select class="form-control" id="parent-stop" name="parent-stop">
                                     <option value="">--</option>
                                 </select>
-                                <button type="button" class="btn btn-primary update-stop-list"
+                                <button type="button" class="btn btn-primary update-parent-stop-list"
                                         data-target="#parent-stop">Update Stop List
                                 </button>
                             </div>

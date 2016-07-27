@@ -1,11 +1,15 @@
 import csv
 import json
+import random
 import urllib
+
 from operator import itemgetter
 
 import requests
 import shapefile
+
 from django import http
+from django.core import serializers
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.db.models import Q
@@ -15,7 +19,6 @@ from django.db.utils import DatabaseError
 
 from multigtfs.models import Agency, Route, Stop, Feed, FeedInfo, Service, Trip, StopTime, Shape, ShapePoint
 from .mixins import AJAXListMixin
-import random
 from django.template.defaultfilters import slugify
 from django.core.servers.basehttp import FileWrapper
 from datetime import datetime
@@ -203,6 +206,24 @@ def add_stop_ajax(request, **kwargs):
                                                      'lon': stop.point.x}), status=201)
             except DatabaseError as e:
                 return http.HttpResponse(status=400, content="A probem occurred. Stop not created")
+
+
+class ParentStopListJSONView(generic.ListView):
+    model = Stop
+
+    def get_context_data(self, **kwargs):
+        context = super(ParentStopListJSONView, self).get_context_data(**kwargs)
+        context['feed_id'] = self.kwargs['feed_id']
+        return context
+
+    def get_queryset(self):
+        stations = Stop.objects.filter(feed_id=self.kwargs['feed_id'],
+                                       parent_station_id__isnull=False).values_list('parent_station_id',
+                                                                                    flat=True).distinct()
+        return Stop.objects.filter(id__in=stations).order_by('name')
+
+    def get(self, request, *args, **kwargs):
+        return http.HttpResponse(serializers.serialize('json', self.get_queryset()))
 
 
 class StopListJSONView(AJAXListMixin, generic.ListView):
