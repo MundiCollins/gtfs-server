@@ -139,13 +139,13 @@
 
             generateRoute('{% url 'get_route_ajax' %}', waypoints);
 
-
             $(document).on('markerDragEnd', function (e, data) {
                 console.log(data);
                 var message = 'Do you want to make this change permananent on the stop <strong>"' + (data.marker.options.title) + '"</strong>?'
                 bootbox.confirm(message, function (response) {
                     if (!response) {
-                        location.reload();
+                        data.marker.setLatLng(data.marker.options.oldLatLng);
+                        delete data.marker.options.oldLatLng;
                     } else {
                         var point = wkt.fromObject(data.marker).write();
                         var params = {
@@ -153,13 +153,26 @@
                             point: point,
                             csrfmiddlewaretoken: '{{ csrf_token }}',
                         }
-
+                        
                         // Update waypoint after dragging
                         waypoints[data.index].lat = data.marker.getLatLng().lat;
                         waypoints[data.index].lon = data.marker.getLatLng().lng;
 
+                        // Point to be moved
+                        var newWaypoint = waypoints[data.index];
+
+                        //Delete old point
+                        waypoints.splice(data.index,1);
+
+                        //Remove Item form stops list
+                        var anchor = $('#current-stops form > ul').children().eq(data.index);
+                        anchor.remove();
+
+                        //Re-insert at new position
+                        insertWaypoint(map, newWaypoint, waypoints);
                         updateStop('{% url 'update_stop_ajax' %}', params);
                         generateRoute('{% url 'get_route_ajax' %}', waypoints);
+                        $('#current-stops form').submit();
                     }
                 });
             });
