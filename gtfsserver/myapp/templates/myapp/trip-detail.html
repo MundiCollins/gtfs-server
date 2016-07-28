@@ -153,7 +153,7 @@
                             point: point,
                             csrfmiddlewaretoken: '{{ csrf_token }}',
                         }
-                        
+
                         // Update waypoint after dragging
                         waypoints[data.index].lat = data.marker.getLatLng().lat;
                         waypoints[data.index].lon = data.marker.getLatLng().lng;
