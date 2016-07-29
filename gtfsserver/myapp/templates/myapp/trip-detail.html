@@ -140,7 +140,6 @@
             generateRoute('{% url 'get_route_ajax' %}', waypoints);
 
             $(document).on('markerDragEnd', function (e, data) {
-                console.log(data);
                 var message = 'Do you want to make this change permananent on the stop <strong>"' + (data.marker.options.title) + '"</strong>?'
                 bootbox.confirm(message, function (response) {
                     if (!response) {
