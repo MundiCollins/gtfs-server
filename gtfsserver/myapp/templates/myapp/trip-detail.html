@@ -359,9 +359,6 @@
                     }
                 }
 
-                console.log(generated_route.getLatLngs());
-                console.log(state);
-
                 if(!(generated_route.getLatLngs().length > 0) && state){
                     var message = "Mapzen Valhalla could not trace this route <br/>";
                         message += "It is possible that the route as is is <strong>outdated and no longer valid</strong>. <br/>";
@@ -369,8 +366,6 @@
                     bootbox.alert(message)
                 }
             });
-
-            console.log({{trip.is_approved|lower}})
 
             $('#verified-switch').bootstrapSwitch({
                 state: {{trip.is_approved|lower}} ,

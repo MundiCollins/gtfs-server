@@ -286,18 +286,23 @@ function insertWaypoint(map, newWaypoint, waypoints) {
 
     var new_point = L.latLng(newWaypoint.lat,newWaypoint.lon);
     var closest = L.GeometryUtil.closest(map, points, new_point, true);
-    var insert_after = true;
+    var insert_after = false;
 
     for (var index = 0; index < points.length; index++) {
         var cur = L.latLng(points[index].lat, points[index].lng);
         if ((cur.lat == closest.lat) && (cur.lng == closest.lng)) {
-            var angle = L.GeometryUtil.computeAngle(map.latLngToLayerPoint(closest), map.latLngToLayerPoint(new_point));
-            if (angle >= 90 && angle <= 270) {
-                insert_after = false;
+            //var angle = L.GeometryUtil.computeAngle(map.latLngToLayerPoint(closest), map.latLngToLayerPoint(new_point));
+            var angle = L.GeometryUtil.bearing(closest, new_point);
+            if (angle >= 0 && angle <= 180) {
+                insert_after = true;
             }
             break;
         }
     }
+
+    console.log(closest);
+    console.log(angle);
+    console.log(insert_after);
     // Get the corresponding stop on the list
     var anchorElement = $('#current-stops form > ul').children().eq(index);
 
