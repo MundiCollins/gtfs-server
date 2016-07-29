@@ -169,9 +169,11 @@
                         anchor.remove();
 
                         //Re-insert at new position
-                        insertWaypoint(map, newWaypoint, waypoints);
+                        waypoints = insertWaypoint(map, newWaypoint, waypoints);
                         updateStop('{% url 'update_stop_ajax' %}', params);
                         generateRoute('{% url 'get_route_ajax' %}', waypoints);
+
+                        // Save on behalf of the user
                         $('#current-stops form').submit();
                     }
                 });
@@ -244,6 +246,10 @@
 
                 // Refresh map after updating waypoints
                 generateRoute('{% url 'get_route_ajax' %}', waypoints);
+
+                // Save on behalf of the user
+                $('#current-stops form').submit();
+
             });
 
             $('#save-stop').on('click', function () {
