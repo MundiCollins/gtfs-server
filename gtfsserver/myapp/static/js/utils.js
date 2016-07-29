@@ -300,9 +300,6 @@ function insertWaypoint(map, newWaypoint, waypoints) {
         }
     }
 
-    console.log(closest);
-    console.log(angle);
-    console.log(insert_after);
     // Get the corresponding stop on the list
     var anchorElement = $('#current-stops form > ul').children().eq(index);
 
