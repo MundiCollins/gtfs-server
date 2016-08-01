@@ -18,7 +18,6 @@ from django.views import generic
 from django.db.utils import DatabaseError
 
 from multigtfs.models import Agency, Route, Stop, Feed, FeedInfo, Service, Trip, StopTime, Shape, ShapePoint
-from .mixins import AJAXListMixin
 from django.template.defaultfilters import slugify
 from django.core.servers.basehttp import FileWrapper
 from datetime import datetime
@@ -212,11 +211,6 @@ def add_stop_ajax(request, **kwargs):
 class ParentStopListJSONView(generic.ListView):
     model = Stop
 
-    def get_context_data(self, **kwargs):
-        context = super(ParentStopListJSONView, self).get_context_data(**kwargs)
-        context['feed_id'] = self.kwargs['feed_id']
-        return context
-
     def get_queryset(self):
         stations = Stop.objects.filter(feed_id=self.kwargs['feed_id'],
                                        parent_station_id__isnull=False).values_list('parent_station_id',
@@ -227,8 +221,21 @@ class ParentStopListJSONView(generic.ListView):
         return http.HttpResponse(serializers.serialize('json', self.get_queryset()))
 
 
-class StopListJSONView(AJAXListMixin, generic.ListView):
+class StopListJSONView(generic.ListView):
     model = Stop
+
+    def get_queryset(self):
+        if self.request.GET.get('inbound_status') and self.request.GET.get('corridor'):
+            inbound_status = self.request.GET.get('inbound_status')
+            corridor = self.request.GET.get('corridor')
+            regex = r"^{}\d{}".format(corridor, inbound_status)
+
+            queryset = Stop.objects.filter(stop_id__regex=regex, feed_id=self.kwargs['feed_id'])
+
+        return queryset.order_by('name')
+
+    def get(self, request, *args, **kwargs):
+        return http.HttpResponse(serializers.serialize('json', self.get_queryset()))
 
 
 def get_route_ajax(request, **kwargs):
@@ -328,7 +335,6 @@ def update_feed_ajax(request, **kwargs):
         except DatabaseError as e:
             return http.HttpResponse(status=400, content='An error occurred while processing your request')
     return http.HttpResponse(status=400)
-
 
 
 def delete_stop_ajax(request, **kwargs):

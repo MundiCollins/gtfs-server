@@ -322,7 +322,7 @@
             $('.update-stop-list').on('click', function (e) {
                 var params = {
                     inbound_status: '{{ inbound_status }}',
-                    corridor: '{{ corridor }}'
+                    corridor: '{{ corridor }}',
                 }
                 fetch_and_populate_stops('{% url 'get_stop_list_ajax' feed_id=feed_id %}', params, $(this).data('target'));
             });
