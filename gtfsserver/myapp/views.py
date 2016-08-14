@@ -190,11 +190,22 @@ def trip_detail_view(request, **kwargs):
 def add_stop_ajax(request, **kwargs):
     if request.method == 'POST':
         if request.is_ajax():
+            request_params = request.POST.dict()
             try:
-                request_params = request.POST.dict()
+                valid = False
+                stop_id_prefix = request_params.get('stop_id_prefix')
+                stop_name = request_params.get('name')
+                stop_id_suffix = list(stop_name.replace(' ', '').upper())
+
+                while not valid:
+                    random.shuffle(stop_id_suffix)
+                    stop_id = stop_id_prefix + "".join(stop_id_suffix[:3])
+
+                    valid = Stop.objects.filter(stop_id=stop_id).count() == 0
+
                 params = {
-                    'name': request_params.get('name'),
-                    'stop_id': request_params.get('stop_id'),
+                    'name': stop_name,
+                    'stop_id': stop_id,
                     'point': request_params.get('point'),
                     'feed_id': request_params.get('feed_id')
                 }
@@ -566,6 +577,13 @@ def update_shape_ajax(request, **kwargs):
                 return http.HttpResponse(content='Shape updated successfully', status=200)
         except Exception as e:
             return http.HttpResponse(content='An error occurred while processing your request', status=400)
+
+
+def _delete_unused_stops(feed_id):
+    used_stops = StopTime.objects.all().values_list('stop_id', flat=True)
+
+    # Delete any unused stops
+    Stop.objects.filter(~Q(location_type='1'), ~Q(id__in=used_stops), feed_id=feed_id).delete()
 
 
 def export_feed(request, **kwargs):

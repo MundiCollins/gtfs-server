@@ -219,9 +219,9 @@
                 }
 
                 var stop_point = wkt.fromObject(stop_marker);
-                var stopNameSuffix = _.join(_.shuffle($('#stop-name').val().replace(/ /g, '')), '').substr(0, 3).toUpperCase();
                 var params = {
-                    stop_id: '{{ corridor }}' + $('#stop-designation').val() + '{{ inbound_status }}' + stopNameSuffix,
+                    stop_id_prefix:  '{{ corridor }}' + $('#stop-designation').val() + '{{ inbound_status }}',
+                    stop_id_suffix: _.join(_.shuffle($('#stop-name').val().replace(/ /g, '')), '').substr(0, 3).toUpperCase(),
                     name: $('#stop-name').val().trim(),
                     point: stop_point.write(),
                     csrfmiddlewaretoken: '{{ csrf_token }}',
