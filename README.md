@@ -16,7 +16,8 @@ sudo apt-get dist-upgrade
 
     - mkdir -p /srv/projects/gtfs
     - cd /srv/projects/gtfs
-    - git clone <url> .
+    - git clone https://github.com/derickl/gtfs-server.git .
+    - git checkout -b test
     - virtualenv env
     - source ./env/bin/activate
 
