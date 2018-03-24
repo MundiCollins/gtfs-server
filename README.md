@@ -18,15 +18,16 @@ sudo apt-get dist-upgrade
     - cd /srv/projects/gtfs
     - git clone https://github.com/derickl/gtfs-server.git .
     - git checkout -b test
+    - git pull origin test
     - virtualenv env
     - source ./env/bin/activate
 
-    - pip install -r requirements.txt
+    - pip2 install -r requirements.txt
     - deactivate
 
 3. Create the gtsf database in postgres
 
-    - sudo su - postgres
+    - sudo -su postgres
     - psql -c "CREATE USER gtfs WITH PASSWORD 'gtfs'"
     - psql -c "CREATE DATABASE gtfs"
     - psql -c "GRANT ALL PRIVILEGES ON DATABASE gtfs TO gtfs"
