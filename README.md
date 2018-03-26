@@ -52,7 +52,7 @@ sudo apt-get dist-upgrade
     - sudo service nginx restart
 
 7. Initialize the database and set up an admin user
-    - python gtfsserver/manage.py collectstatic
+    - python2 gtfsserver/manage.py collectstatic
     - python gtfsserver/manage.py syncdb --noinput
     - python gtfsserver/manage.py migrate
     - python gtfsserver/manage.py createsuperuser
