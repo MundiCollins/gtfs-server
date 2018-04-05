@@ -92,6 +92,8 @@
         });
 
         $(document).on('error', function (e, data) {
+            console.log(e);
+            console.log(data);
             data.alert_type = 'alert-danger';
             $('#alert').html(alertTemplate(data));
             $(".alert-message").delay(2000).fadeOut("slow", function () {

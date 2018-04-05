@@ -44,7 +44,7 @@ INSTALLED_APPS = (
     'django.contrib.gis',
     'corsheaders',
     'rest_framework',
-    'debug_toolbar',
+    # 'debug_toolbar',
     'multigtfs',
     'rest_framework_swagger',
     'myapp',
@@ -129,6 +129,10 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "../static/")
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ORIGIN_WHITELIST = (
+    'localhost:8080',
+)
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
