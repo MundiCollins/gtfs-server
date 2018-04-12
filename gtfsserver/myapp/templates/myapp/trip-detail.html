@@ -137,7 +137,8 @@
                 });
             {% endfor %}
 
-            generateRoute('{% url 'get_route_ajax' %}', waypoints);
+            generateRoute('{% url 'get_route_ajax' %}', waypoints);  // DRAW MAP AND PLOT ROUTE
+
 
             $(document).on('markerDragEnd', function (e, data) {
                 var message = 'Do you want to make this change permananent on the stop <strong>"' + (data.marker.options.title) + '"</strong>?'
@@ -378,7 +379,6 @@
                     csrfmiddlewaretoken: '{{ csrf_token }}',
                 }
                 updateTrip('{% url 'update_trip_ajax' %}', params);
-                console.log(params);
             });
         });
     </script>

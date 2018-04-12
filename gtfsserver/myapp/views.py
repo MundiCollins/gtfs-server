@@ -255,7 +255,16 @@ def get_route_ajax(request, **kwargs):
         params['json'] = urllib.unquote(str(request.GET.get('json')))
         params['api_key'] = urllib.unquote(str(request.GET.get('api_key')))
 
-        url = 'https://valhalla.mapzen.com/route?api_key={api_key}&json={json}'.format(**params)
+        locs_json = params['json']
+        locs_json = json.loads(locs_json)
+        points = ''
+        for location in locs_json['locations']:
+            points += str(location['lon']) + ',' + str(location['lat']) + ';'
+
+        points = points[:-1]
+        # url = 'https://valhalla.mapzen.com/route?api_key={api_key}&json={json}'.format(**params)
+        # url1 = 'http://router.project-osrm.org/route/v1/driving/13.388860,52.517037;13.397634,52.529407;13.428555,52.523219?overview=false'
+        url = 'http://router.project-osrm.org/route/v1/driving/' + points + '?overview=false'
 
         response = requests.get(url)
 

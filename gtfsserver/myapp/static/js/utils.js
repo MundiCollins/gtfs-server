@@ -55,6 +55,7 @@ function chunkArray(waypoints, groupSize) {
 }
 
 function generateRoute(routing_server_url, waypoints) {
+    // console.log(waypoints);
     var wps = $.map(waypoints, function (waypoint) {
         return {lat: waypoint.lat, lon: waypoint.lon, name: waypoint.name, type: waypoint.type}
     });
@@ -81,6 +82,7 @@ function generateRoute(routing_server_url, waypoints) {
         try {
             for (var i = 0; i < arguments.length; i++) {
                 var json = JSON.parse(arguments[i][0]);
+                // console.log(json);
                 route = route.concat(decodePolyline(json.trip.legs[0].shape));
             }
         } catch (e) {}
@@ -139,7 +141,7 @@ function updateTrip(url, data) {
 
     jqxhr.fail(function (jqXHR, status, error) {
         $(document).trigger('error', {message: 'Failed due to: ' + status + " " + error});
-        console.log(jqXHR.responseText);
+        // console.log(jqXHR.responseText);
     });
 }
 
@@ -241,7 +243,7 @@ function delete_trip(url, params){
     });
 
     request.done(function (result) {
-        console.log(result);
+        // console.log(result);
         $(document).trigger('success', {message: result});
     });
 
