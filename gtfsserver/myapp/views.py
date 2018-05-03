@@ -2,6 +2,7 @@ import csv
 import json
 import random
 import urllib
+import yaml
 
 from operator import itemgetter
 
@@ -11,13 +12,13 @@ import shapefile
 from django import http
 from django.core import serializers
 from django.core.urlresolvers import reverse
-from django.db import transaction
+from django.db import transaction, connection
 from django.db.models import Q
 from django.shortcuts import render
 from django.views import generic
 from django.db.utils import DatabaseError
 
-from multigtfs.models import Agency, Route, Stop, Feed, FeedInfo, Service, Trip, StopTime, Shape, ShapePoint
+from multigtfs.models import Agency, Route, Stop, Feed, FeedInfo, Service, Trip, StopTime, Shape, ShapePoint, Ride, NewStop
 from django.template.defaultfilters import slugify
 from django.core.servers.basehttp import FileWrapper
 from datetime import datetime
@@ -141,8 +142,24 @@ def trip_detail_view(request, **kwargs):
     corridor_prefix = trip.route.route_id[0].zfill(2)
     inbound_status = trip.direction
 
-    stops = Stop.objects.filter(parent_station__isnull=True).order_by('name')
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT n.id, n.latitude, n.longitude FROM multigtfs_ride r JOIN multigtfs_newstop n ON(n.ride_id=r.id)"
+        " WHERE NOT(n.is_approved) AND r.route_id = " + kwargs['route_id'])
+    columns = [column[0] for column in cursor.description]
+    new_stops = []
 
+    for row in cursor.fetchall():
+        new_stops.append(dict(zip(columns, row)))
+
+    new_stops = yaml.load(json.dumps(new_stops))
+    # new_stops = Ride.objects.filter(route=kwargs['route_id']).select_related()
+    # new_stops = Ride.objects.select_related().get(route=kwargs['route_id'])
+    # print(type(new_stops))
+
+    print new_stops
+
+    stops = Stop.objects.filter(parent_station__isnull=True).order_by('name')
     context['agency_id'] = kwargs['agency_id']
     context['feed_id'] = kwargs['feed_id']
     context['route_id'] = kwargs['route_id']
@@ -150,6 +167,7 @@ def trip_detail_view(request, **kwargs):
     context['stops'] = stops
     context['corridor'] = corridor_prefix
     context['inbound_status'] = inbound_status
+    context['new_stops'] = new_stops
 
     if request.method == 'POST':
         start_seconds = 6 * 3600  # First trip is at 6am
@@ -288,7 +306,7 @@ def parse_update_params(request_params):
     return pk, result
 
 
-def _update_ajax(ModelClass, request):
+def _update_ajax(ModelClass, reqte cuest):
     if request.method == 'POST' and request.is_ajax():
         pk, request_params = parse_update_params(request.POST.dict())
         ModelClass.objects.filter(pk=pk).update(**request_params)

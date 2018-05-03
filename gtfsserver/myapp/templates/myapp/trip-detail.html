@@ -36,6 +36,8 @@
         $(document).ready(function () {
             var mapzen_tracing = false;
             var waypoints = [];
+            var new_stops = {{ new_stops|safe }};
+            var new_stops_num = new_stops.length;
             var wkt = new Wkt.Wkt();
             var wkt_object;
             var wkt_object_inline;
@@ -141,10 +143,20 @@
                 });
             {% endfor %}
 
+            for(var i=1; i<new_stops_num; ++i) {
+                waypoints.push({
+                    lat: new_stops[i].latitude,
+                    lon: new_stops[i].longitude,
+                    id: new_stops[i].id,
+                    type: 'through',
+                    icon: redIcon
+                });
+            }
+
             generateRoute('{% url 'get_route_ajax' %}', waypoints);  // DRAW MAP AND PLOT ROUTE
 
-
             $(document).on('markerDragEnd', function (e, data) {
+                console.log(data);
                 var message = 'Do you want to make this change permananent on the stop <strong>"' + (data.marker.options.title) + '"</strong>?'
                 bootbox.confirm(message, function (response) {
                     if (!response) {
@@ -157,6 +169,7 @@
                             point: point,
                             csrfmiddlewaretoken: '{{ csrf_token }}',
                         }
+                        console.log(params);
 
                         // Update waypoint after dragging
                         waypoints[data.index].lat = data.marker.getLatLng().lat;
@@ -397,6 +410,7 @@
             {{ error_message }}
         </div>
     {% endif %}
+
     <div class="row">
         <div class="modal fade" id="stop-modal" tabindex="-1" role="dialog" aria-labelledby="modal-label">
             <div class="modal-dialog" role="document">

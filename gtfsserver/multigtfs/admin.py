@@ -19,7 +19,7 @@ from django.contrib.gis import admin
 from multigtfs.app_settings import MULTIGTFS_OSMADMIN
 from multigtfs.models import (
     Agency, Block, Fare, FareRule, Feed, FeedInfo, Frequency, Route, Service,
-    ServiceDate, Shape, ShapePoint, Stop, StopTime, Transfer, Trip, Zone)
+    ServiceDate, Shape, ShapePoint, Stop, StopTime, Transfer, Trip, Zone, Ride, NewStop)
 
 geo_admin = admin.OSMGeoAdmin if MULTIGTFS_OSMADMIN else admin.GeoModelAdmin
 
@@ -88,6 +88,14 @@ class ZoneAdmin(admin.ModelAdmin):
     raw_id_fields = ('feed', )
 
 
+class RideAdmin(admin.ModelAdmin):
+    raw_id_fields = ('route', )
+
+
+class NewStopAdmin(admin.ModelAdmin):
+    raw_id_fields = ('ride', )
+
+
 admin.site.register(Agency, AgencyAdmin)
 admin.site.register(Block, BlockAdmin)
 admin.site.register(Fare, FareAdmin)
@@ -105,3 +113,5 @@ admin.site.register(StopTime, StopTimeAdmin)
 admin.site.register(Transfer, TransferAdmin)
 admin.site.register(Trip, TripAdmin)
 admin.site.register(Zone, ZoneAdmin)
+admin.site.register(Ride, RideAdmin)
+admin.site.register(NewStop, NewStopAdmin)
