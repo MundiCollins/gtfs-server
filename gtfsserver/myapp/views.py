@@ -306,7 +306,7 @@ def parse_update_params(request_params):
     return pk, result
 
 
-def _update_ajax(ModelClass, reqte cuest):
+def _update_ajax(ModelClass, request):
     if request.method == 'POST' and request.is_ajax():
         pk, request_params = parse_update_params(request.POST.dict())
         ModelClass.objects.filter(pk=pk).update(**request_params)
