@@ -1,14 +1,20 @@
+import json
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.mixins import ListModelMixin
 from rest_framework.filters import DjangoFilterBackend
+
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+
+from rest_framework.permissions import AllowAny
 
 from rest_framework.response import Response
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.views import APIView
 
 from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
 
-from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip, StopTime
+from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip, StopTime, Ride, NewStop
 from .serializers import (
     AgencySerializer,
     GeoRouteSerializer, RouteSerializer, RouteWithTripsSerializer,
@@ -91,3 +97,35 @@ class StopTimeViewSet(ReadOnlyModelViewSet):
     """
     serializer_class = StopTimeSerializer
     queryset = StopTime.objects.all()
+
+
+class RideView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    @csrf_exempt
+    def post(self, request):
+        json_data = json.loads(request.body)
+
+        data = json_data.get('data', None)
+
+        route_id = data.get('route_id', None)
+        route = data.get('route', None)
+        stops = data.get('stops', None)
+
+        route_latitude = route.get('latitude', None)
+        route_longitude = route.get('longitude', None)
+
+        ride = Ride(route=route_id, route_latitude=route_latitude, route_longitude=route_longitude)
+        ride.save()
+        ride_id = ride.id
+
+        for i in stops:
+            latitude = i.get('latitude', None)
+            longitude = i.get('longitude', None)
+            arrival_time = i.get('arrival_time', None)
+            departure_time = i.get('departure_time', None)
+            new_stop = NewStop(ride=ride_id, latitude=latitude, longitude=longitude, arrival_time=arrival_time, departure_time=departure_time)
+            new_stop.save()
+
+        return Response({"success": True})

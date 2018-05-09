@@ -1,10 +1,11 @@
 from django.conf.urls import include, url
 #from rest_framework.routers import SimpleRouter
 from rest_framework_nested import routers
+from django.views.decorators.csrf import csrf_exempt
 
 from .views import (
     FeedViewSet, FeedGeoViewSet, AgencyViewSet, ServiceViewSet, RouteViewSet,
-    TripViewSet, StopViewSet, ServiceDateViewSet, StopTimeViewSet )
+    TripViewSet, StopViewSet, ServiceDateViewSet, StopTimeViewSet, RideView)
 from .nested_views import (
     FeedAgencyViewSet, FeedRouteViewSet, FeedGeoRouteViewSet,
     FeedStopViewSet, FeedGeoStopViewSet,
@@ -30,6 +31,7 @@ router.register(r'stop-times', StopTimeViewSet)
 router.register(r'services', ServiceViewSet)
 router.register(r'service-dates', ServiceDateViewSet)
 router.register(r'trips', TripViewSet)
+router.register(r'ride', csrf_exempt(RideView), base_name='ride')
 
 feeds_router = routers.NestedSimpleRouter(router, r'feeds', lookup='feed')
 
@@ -93,7 +95,7 @@ urls = [
     url(u'^feeds/(?P<feed_pk>[^/]+)/trajectories-today/(?P<hour>\d+)/(?P<bbox>[^/]+)/$', TrajectoriesView.as_view(), name="trajectories"),
     url(u'^feeds/(?P<feed_pk>[^/]+)/trajectories-now/(?P<bbox>[^/]+)/$', TrajectoriesView.as_view(), name="trajectories"),
 
-
+    url(u'^ride', csrf_exempt(RideView.as_view()), name="ride"),
 
 ]
 urlpatterns = router.urls + feeds_router.urls + services_router.urls + routes_router.urls + stops_router.urls +  trips_router.urls + urls

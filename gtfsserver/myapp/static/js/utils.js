@@ -88,7 +88,7 @@ function generateRoute(routing_server_url, waypoints) {
         } catch (e) {}
 
          var polyline = L.polyline(route, {
-                color: 'red',
+                color: 'blue',
                 weight: 5,
                 opacity: 0.5,
                 smoothFactor: 1
@@ -101,18 +101,72 @@ function generateRoute(routing_server_url, waypoints) {
     });
 }
 
+function generateNewRoute(routing_server_url, waypoints) {
+    // console.log(waypoints);
+    var wps = $.map(waypoints, function (waypoint) {
+        return {lat: waypoint.lat, lon: waypoint.lon, name: waypoint.name, type: waypoint.type}
+    });
+    var groups = chunkArray(wps, 50);
+    var promises = $.map(groups, function (group) {
+        var json = {
+            locations: group,
+            costing: 'bus',
+        }
+
+        var data = {
+            json: JSON.stringify(json),
+            api_key: 'valhalla-SdWQH9o'
+        }
+        return $.get(routing_server_url, data);
+    });
+
+    var route = [];
+    $.when.apply($, promises).then(function () {
+        //response format [data, textStatus, jqXHR]
+        if (promises.length == 1) {
+            arguments = [arguments]
+        }
+        try {
+            for (var i = 0; i < arguments.length; i++) {
+                var json = JSON.parse(arguments[i][0]);
+                // console.log(json);
+                route = route.concat(decodePolyline(json.trip.legs[0].shape));
+            }
+        } catch (e) {}
+
+         var polyline = L.polyline(route, {
+                stroke: 'red',
+                color: 'red',
+                weight: 5,
+                opacity: 0.5,
+                smoothFactor: 1
+            });
+
+        $(document).trigger('newRouteGenerated', {route: polyline, waypoints: waypoints});
+
+    }).fail(function (jqXHR, status, error) {
+        $(document).trigger('error', {message: 'Failed due to: ' + status + " " + error})
+    });
+}
+
 
 function getMarkersFromWaypoints(waypoints) {
     return $.map(waypoints, function (waypoint, index) {
         var markerLocation = new L.LatLng(waypoint.lat, waypoint.lon);
-        var marker = new L.Marker(markerLocation, {title: waypoint.name, draggable: true, index: index, icon: waypoint.icon});
-        marker.on('dragend', function (e) {
-            $(document).trigger('markerDragEnd', {index: e.target.options.index, marker: e.target});
-        });
+        var marker;
+        if(waypoint.label === "drag") {
+            marker = new L.Marker(markerLocation, {title: waypoint.name, draggable: true, index: index, icon: waypoint.icon});
+            marker.on('dragend', function (e) {
+                $(document).trigger('markerDragEnd', {index: e.target.options.index, marker: e.target});
+            });
 
-        marker.on('dragstart', function (e) {
-            this.options['oldLatLng'] = this.getLatLng();
-        });
+            marker.on('dragstart', function (e) {
+                this.options['oldLatLng'] = this.getLatLng();
+            });
+        }
+        else {
+            marker = new L.Marker(markerLocation, {title: waypoint.name, draggable: false, index: index, icon: waypoint.icon});
+        }
         return marker;
     });
 }
@@ -334,4 +388,15 @@ function insertWaypoint(map, newWaypoint, waypoints) {
         }
     });
     return refreshWaypoints(waypoints);
+}
+
+function confirmStop(url, data) {
+    var jqxhr = $.post(url, data, function (stop) {
+        console.log(stop);
+        $(document).trigger('success', {message: "Successfully added stop " + data.name})
+    }, 'json');
+
+    jqxhr.fail(function (jqXHR, status, error) {
+        $(document).trigger('error', {message: 'Failed due to: ' + status + " " + error})
+    });
 }

@@ -3,6 +3,7 @@ import json
 import random
 import urllib
 import yaml
+import itertools
 
 from operator import itemgetter
 
@@ -151,15 +152,22 @@ def trip_detail_view(request, **kwargs):
 
     for row in cursor.fetchall():
         new_stops.append(dict(zip(columns, row)))
-
     new_stops = yaml.load(json.dumps(new_stops))
-    # new_stops = Ride.objects.filter(route=kwargs['route_id']).select_related()
-    # new_stops = Ride.objects.select_related().get(route=kwargs['route_id'])
-    # print(type(new_stops))
 
-    print new_stops
+    cursor.execute(
+        "SELECT CONCAT(n.longitude, ' ', n.latitude) FROM multigtfs_ride r JOIN multigtfs_newstop n ON(n.ride_id=r.id)"
+        " WHERE NOT(n.is_approved) AND r.route_id = " + kwargs['route_id'])
+    new_stops_route = []
 
+    for row in cursor.fetchall():
+        for i in row:
+            i = i.encode('latin-1')
+            i = i.translate(None, "()#")
+            new_stops_route.append(i)
     stops = Stop.objects.filter(parent_station__isnull=True).order_by('name')
+    print stops
+    print new_stops_route
+
     context['agency_id'] = kwargs['agency_id']
     context['feed_id'] = kwargs['feed_id']
     context['route_id'] = kwargs['route_id']
@@ -168,6 +176,7 @@ def trip_detail_view(request, **kwargs):
     context['corridor'] = corridor_prefix
     context['inbound_status'] = inbound_status
     context['new_stops'] = new_stops
+    context['new_stops_route'] = new_stops_route
 
     if request.method == 'POST':
         start_seconds = 6 * 3600  # First trip is at 6am
@@ -209,6 +218,7 @@ def add_stop_ajax(request, **kwargs):
     if request.method == 'POST':
         if request.is_ajax():
             request_params = request.POST.dict()
+            print(request_params)
             try:
                 valid = False
                 stop_id_prefix = request_params.get('stop_id_prefix')
@@ -234,7 +244,7 @@ def add_stop_ajax(request, **kwargs):
                                                      'lat': stop.point.y,
                                                      'lon': stop.point.x}), status=201)
             except DatabaseError as e:
-                return http.HttpResponse(status=400, content="A probem occurred. Stop not created")
+                return http.HttpResponse(status=400, content="A problem occurred. Stop not created")
 
 
 class ParentStopListJSONView(generic.ListView):
@@ -657,3 +667,34 @@ def new_feed(request, **kwargs):
             error_message = "Something went wrong while processing your upload. Please try again later"
     return render(request, 'myapp/new-feed.html', {'error_message': error_message})
 
+
+def confirm_stop_ajax(request, **kwargs):
+    if request.method == 'POST':
+        if request.is_ajax():
+            request_params = request.POST.dict()
+            try:
+                valid = False
+                stop_id_prefix = request_params.get('stop_id_prefix')
+                stop_name = request_params.get('name')
+                stop_id_suffix = list(stop_name.replace(' ', '').upper())
+
+                while not valid:
+                    random.shuffle(stop_id_suffix)
+                    stop_id = stop_id_prefix + "".join(stop_id_suffix[:3])
+
+                    valid = Stop.objects.filter(stop_id=stop_id).count() == 0
+
+                params = {
+                    'name': stop_name,
+                    'stop_id': stop_id,
+                    'point': request_params.get('point'),
+                    'feed_id': request_params.get('feed_id')
+                }
+                stop = Stop(**params)
+                stop.save()
+                return http.HttpResponse(json.dumps({'id': stop.id,
+                                                     'name': stop.name,
+                                                     'lat': stop.point.y,
+                                                     'lon': stop.point.x}), status=201)
+            except DatabaseError as e:
+                return http.HttpResponse(status=400, content="A problem occurred. Stop not created")

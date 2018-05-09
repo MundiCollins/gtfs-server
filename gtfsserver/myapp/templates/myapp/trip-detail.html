@@ -36,17 +36,24 @@
         $(document).ready(function () {
             var mapzen_tracing = false;
             var waypoints = [];
+            var waypoints1 = [];
             var new_stops = {{new_stops|safe}};
             var new_stops_num = new_stops.length;
             var wkt = new Wkt.Wkt();
             var wkt_object;
             var wkt_object_inline;
+            var wkt1 = new Wkt.Wkt();
+            var wkt1_object;
+            var wkt1_object_inline;
             var markers;
             var markers_inline;
+            var markers1;
+            var markers_inline1;
             var map = L.map('map', {crs: L.CRS.EPSG4326});
             // var ourmap = L.map('maps', {cdr: L.CRS.EPSG4326});
             var original_route;
             var generated_route;
+            var new_route;
             var inline_map = L.map('inline-map', {crs: L.CRS.EPSG4326});
             var popup = L.popup();
             var stop_marker = L.marker();
@@ -63,8 +70,31 @@
                 }
             });
 
+            var GrayIconClass = L.Icon.Default.extend({
+                options: {
+                    iconUrl: "{% static 'img/marker-icon-gray.png' %}"
+                }
+            });
+
             var redIcon = new RedIconClass();
             var blueIcon = new BlueIconClass();
+            var grayIcon = new GrayIconClass();
+
+            var new_routes = '{{ new_stops_route }}';
+
+            var split = new_routes.split(';');
+            var wkt_components = split.length;
+            if(wkt_components > 1) {
+                var new_set = 'LINESTRING (';
+                for (var i = 0; i < wkt_components; ++i) {
+                    if (i % 2 === 1) {
+                        new_set += split[i].replace('&#39', '') + ',';
+                    }
+                }
+                new_set = new_set.slice(0, -1);
+                new_set += ')';
+                wkt1.read(new_set);
+            }
 
             wkt.read('{{ trip.geometry.wkt }}');
 
@@ -124,9 +154,20 @@
 
             wkt_object = wkt.toObject();
             wkt_object.addTo(drawnItems);
-
-
             map.fitBounds(wkt_object.getBounds());
+
+            if(wkt_components > 1) {
+
+                wkt1_object_inline = wkt1.toObject();
+                wkt1_object_inline.addTo(inline_map);
+
+                wkt1_object = wkt1.toObject();
+                console.log(wkt1);
+                console.log(wkt_object);
+                wkt1_object.addTo(drawnItems);
+                map.fitBounds(wkt1_object.getBounds());
+            }
+
 
             {% for stop_time in trip.stoptime_set.all|dictsort:'stop_sequence' %}
                 waypoints.push({
@@ -135,6 +176,7 @@
                     id: {{ stop_time.stop.id }},
                     icon: blueIcon,
                     name: "{{ stop_time.stop.name|safe }}",
+                    label: "drag",
                     {% if forloop.first or forloop.last %}
                         type: 'break',
                     {% else %}
@@ -143,60 +185,148 @@
                 });
             {% endfor %}
 
-            for(var i=1; i<new_stops_num; ++i) {
-                waypoints.push({
-                    lat: new_stops[i].latitude,
-                    lon: new_stops[i].longitude,
-                    id: new_stops[i].id,
-                    type: 'through',
-                    icon: redIcon
-                });
+            for(var i=0; i<new_stops_num; ++i) {
+                if(i === 0 || i === new_stops_num - 1) {
+                    waypoints1.push({
+                        lat: Number(new_stops[i].latitude),
+                        lon: Number(new_stops[i].longitude),
+                        id: new_stops[i].id,
+                        type: 'break',
+                        icon: grayIcon,
+                        name: 'new',
+                        label: ''
+                    });
+                }
+                else {
+                    waypoints1.push({
+                        lat: Number(new_stops[i].latitude),
+                        lon: Number(new_stops[i].longitude),
+                        id: new_stops[i].id,
+                        type: 'through',
+                        icon: grayIcon,
+                        name: 'new',
+                        label: '',
+                    });
+                }
             }
 
+            console.log(waypoints1);
+
             generateRoute('{% url 'get_route_ajax' %}', waypoints);  // DRAW MAP AND PLOT ROUTE
+            generateNewRoute('{% url 'get_route_ajax' %}', waypoints1);  // DRAW MAP AND PLOT ROUTE
 
             $(document).on('markerDragEnd', function (e, data) {
-                console.log(data);
+                var old_lat = data.marker.options.oldLatLng.lat;
+                var old_lon = data.marker.options.oldLatLng.lng;
+
+                console.log(old_lat);
+                console.log(old_lon);
+
                 var message = 'Do you want to make this change permananent on the stop <strong>"' + (data.marker.options.title) + '"</strong>?'
                 bootbox.confirm(message, function (response) {
                     if (!response) {
                         data.marker.setLatLng(data.marker.options.oldLatLng);
                         delete data.marker.options.oldLatLng;
                     } else {
-                        var point = wkt.fromObject(data.marker).write();
-                        var params = {
-                            pk: waypoints[data.index].id,
-                            point: point,
-                            csrfmiddlewaretoken: '{{ csrf_token }}',
-                        }
-                        console.log(params);
+                         waypoints.filter(function (item) {
+                             if (item.lat === old_lat && item.lon === old_lon) {
+                                  console.log("waypoints point");
 
-                        // Update waypoint after dragging
-                        waypoints[data.index].lat = data.marker.getLatLng().lat;
-                        waypoints[data.index].lon = data.marker.getLatLng().lng;
+                                  var point = wkt.fromObject(data.marker).write();
+                                  var params = {
+                                    pk: waypoints[data.index].id,
+                                    point: point,
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                  }
+                                  console.log(params);
 
-                        // Point to be moved
-                        var newWaypoint = waypoints[data.index];
+                                  // Update waypoint after dragging
+                                  waypoints[data.index].lat = data.marker.getLatLng().lat;
+                                  waypoints[data.index].lon = data.marker.getLatLng().lng;
 
-                        //Delete old point
-                        waypoints.splice(data.index,1);
+                                  // Point to be moved
+                                  var newWaypoint = waypoints[data.index];
 
-                        //Remove Item form stops list
-                        var anchor = $('#current-stops form > ul').children().eq(data.index);
-                        anchor.remove();
+                                  //Delete old point
+                                  waypoints.splice(data.index,1);
 
-                        //Re-insert at new position
-                        waypoints = insertWaypoint(map, newWaypoint, waypoints);
-                        updateStop('{% url 'update_stop_ajax' %}', params);
-                        generateRoute('{% url 'get_route_ajax' %}', waypoints);
+                                  //Remove Item form stops list
+                                  var anchor = $('#current-stops form > ul').children().eq(data.index);
+                                  anchor.remove();
 
-                        // Save on behalf of the user
-                        $('#current-stops form').submit();
+                                  //Re-insert at new position
+                                  waypoints = insertWaypoint(map, newWaypoint, waypoints);
+                                  updateStop('{% url 'update_stop_ajax' %}', params);
+                                  generateRoute('{% url 'get_route_ajax' %}', waypoints);
+
+                                  // Save on behalf of the user
+                                  $('#current-stops form').submit();
+                             }
+                         });
+                         waypoints1.filter(function (item) {
+                             if (item.lat === old_lat && item.lon === old_lon) {
+                                  bootbox.prompt({
+                                      size: "small",
+                                      title: "Provide a name for the stop",
+                                      callback: function(result){
+                                          if(!result) {
+                                              data.marker.setLatLng(data.marker.options.oldLatLng);
+                                              delete data.marker.options.oldLatLng;
+                                          }
+                                          else {
+                                              var stop_name = result;
+
+                                              var point = wkt.fromObject(data.marker).write();
+                                              var params = {
+                                                  pk: waypoints1[data.index].id,
+                                                  name: stop_name,
+                                                  point: point,
+                                                  feed_id: {{ feed_id }},
+                                                  csrfmiddlewaretoken: '{{ csrf_token }}',
+                                              };
+                                              console.log(params);
+
+                                              // Update waypoint after dragging
+                                              item.lat = data.marker.getLatLng().lat;
+                                              item.lon = data.marker.getLatLng().lng;
+                                              console.log(item);
+
+                                              //Delete old point
+                                              waypoints1.splice(data.index,1);
+
+                                              // confirm new stop
+                                              confirmStop('{% url 'confirm_stop_ajax' %}', params);
+                                          }
+                                      }
+                                  });
+                                  //
+                                  // // Point to be moved
+                                  // var newWaypoint = item;
+                                  //
+                                  // //Delete old point
+                                  // console.log(waypoints1);
+                                  // waypoints1.splice(data.index,1);
+                                  // console.log(waypoints1);
+
+                                  //Remove Item form stops list
+                                  // var anchor = $('#current-stops form > ul').children().eq(data.index);
+                                  // anchor.remove();
+
+                                  //Re-insert at new position
+                                  // waypoints1 = insertWaypoint(map, newWaypoint, waypoints1);
+                                  // updateStop('{% url 'update_stop_ajax' %}', params);
+                                  // generateRoute('{% url 'get_route_ajax' %}', waypoints1);
+
+                                  // Save on behalf of the user
+                                  // $('#current-stops form').submit();
+                             }
+                         });
                     }
                 });
             });
 
             $(document).on('routeGenerated', function (e, data) {
+                console.log(data);
                 // Clean up existing route
                 if (generated_route) {
                     map.removeLayer(generated_route);
@@ -204,6 +334,7 @@
 
                 // Plot generated route
                 generated_route = data.route;
+                console.log(generated_route);
                 if (mapzen_tracing) {
                     generated_route.addTo(map);
                 }
@@ -221,6 +352,38 @@
 
                 //update inline markers
                 markers_inline = getMarkersFromWaypoints(waypoints);
+            });
+
+            $(document).on('newRouteGenerated', function (e, data) {
+                console.log("new route...");
+                console.log(data);
+                // Clean up existing route
+                if (new_route) {
+                    map.removeLayer(new_route);
+                }
+
+                // Plot generated route
+                new_route = data.route;
+                console.log(new_route);
+                // if (mapzen_tracing) {
+                //     new_route.addTo(map);
+                // }
+
+                new_route.addTo(map);
+
+                // Clean up existing stop markers
+                if (markers1) {
+                    $.map(markers, function (marker) {
+                        map.removeLayer(marker);
+                    });
+                }
+
+                // Plot new updated stop markers
+                markers1 = getMarkersFromWaypoints(waypoints1);
+                plotMarkers(markers1, map);
+
+                //update new inline markers
+                markers_inline1 = getMarkersFromWaypoints(waypoints1);
             });
 
             $('#stop-form').on('submit', function (event) {
@@ -335,6 +498,10 @@
                 // Plot updated stop markers
                 markers_inline = getMarkersFromWaypoints(waypoints);
                 plotMarkers(markers_inline, inline_map);
+
+                // Plot updated stop markers
+                markers_inline1 = getMarkersFromWaypoints(waypoints1);
+                plotMarkers(markers_inline1, inline_map);
             });
 
             $('.update-stop-list').on('click', function (e) {
