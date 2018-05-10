@@ -48,7 +48,7 @@ INSTALLED_APPS = (
     'multigtfs',
     'rest_framework_swagger',
     'myapp',
-    'stronghold',
+    # 'stronghold',
     'simple_history'
 )
 
@@ -62,7 +62,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'stronghold.middleware.LoginRequiredMiddleware',
+    # 'stronghold.middleware.LoginRequiredMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
 )
 
@@ -161,6 +161,12 @@ LOGIN_URL = '/login/'
 LOGOUT_URL = '/logout/'
 
 STRONGHOLD_DEFAULTS = True
+
+# LOGIN_EXEMPT_URLS = (
+#     r'/api/',
+# )
+
+STRONGHOLD_PUBLIC_URLS = (r'^api/', )
 
 DEBUG_TOOLBAR_CONFIG = {
   'JQUERY_URL': '',

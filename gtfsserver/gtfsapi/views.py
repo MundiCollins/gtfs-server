@@ -13,6 +13,8 @@ from rest_framework.views import APIView
 
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from stronghold.decorators import public
 
 from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip, StopTime, Ride, NewStop
 from .serializers import (
@@ -104,6 +106,7 @@ class RideView(APIView):
     permission_classes = []
 
     @csrf_exempt
+    @method_decorator(public)
     def post(self, request):
         json_data = json.loads(request.body)
 

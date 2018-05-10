@@ -2,6 +2,7 @@ from django.conf.urls import include, url
 #from rest_framework.routers import SimpleRouter
 from rest_framework_nested import routers
 from django.views.decorators.csrf import csrf_exempt
+from stronghold.decorators import public
 
 from .views import (
     FeedViewSet, FeedGeoViewSet, AgencyViewSet, ServiceViewSet, RouteViewSet,
@@ -95,7 +96,7 @@ urls = [
     url(u'^feeds/(?P<feed_pk>[^/]+)/trajectories-today/(?P<hour>\d+)/(?P<bbox>[^/]+)/$', TrajectoriesView.as_view(), name="trajectories"),
     url(u'^feeds/(?P<feed_pk>[^/]+)/trajectories-now/(?P<bbox>[^/]+)/$', TrajectoriesView.as_view(), name="trajectories"),
 
-    url(u'^ride', csrf_exempt(RideView.as_view()), name="ride"),
+    url(u'^ride/', csrf_exempt(RideView.as_view()), name="ride"),
 
 ]
 urlpatterns = router.urls + feeds_router.urls + services_router.urls + routes_router.urls + stops_router.urls +  trips_router.urls + urls
