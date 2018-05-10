@@ -32,8 +32,9 @@ from .trip import Trip
 from .zone import Zone
 from .new_ride import Ride
 from .new_stop import NewStop
+from .new_route import NewRoute
 
 # pyflakes be quiet
 __models = (
     Agency, Block, Fare, FareRule, Feed, FeedInfo, Frequency, Route, Service,
-    ServiceDate, Shape, ShapePoint, Stop, StopTime, Transfer, Trip, Zone, Ride, NewStop)
+    ServiceDate, Shape, ShapePoint, Stop, StopTime, Transfer, Trip, Zone, Ride, NewStop, NewRoute)
