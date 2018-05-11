@@ -6,7 +6,7 @@ from stronghold.decorators import public
 
 from .views import (
     FeedViewSet, FeedGeoViewSet, AgencyViewSet, ServiceViewSet, RouteViewSet,
-    TripViewSet, StopViewSet, ServiceDateViewSet, StopTimeViewSet, RideView)
+    TripViewSet, StopViewSet, ServiceDateViewSet, StopTimeViewSet, RideView, FareView)
 from .nested_views import (
     FeedAgencyViewSet, FeedRouteViewSet, FeedGeoRouteViewSet,
     FeedStopViewSet, FeedGeoStopViewSet,
@@ -33,6 +33,7 @@ router.register(r'services', ServiceViewSet)
 router.register(r'service-dates', ServiceDateViewSet)
 router.register(r'trips', TripViewSet)
 router.register(r'ride', csrf_exempt(RideView), base_name='ride')
+router.register(r'fare', csrf_exempt(FareView), base_name='fare')
 
 feeds_router = routers.NestedSimpleRouter(router, r'feeds', lookup='feed')
 
@@ -97,6 +98,7 @@ urls = [
     url(u'^feeds/(?P<feed_pk>[^/]+)/trajectories-now/(?P<bbox>[^/]+)/$', TrajectoriesView.as_view(), name="trajectories"),
 
     url(u'^ride/', csrf_exempt(RideView.as_view()), name="ride"),
+    url(u'^fare/', csrf_exempt(FareView.as_view()), name="fare"),
 
 ]
 urlpatterns = router.urls + feeds_router.urls + services_router.urls + routes_router.urls + stops_router.urls +  trips_router.urls + urls

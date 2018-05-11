@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from stronghold.decorators import public
 
-from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip, StopTime, Ride, NewStop, NewRoute
+from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip, StopTime, Ride, NewStop, NewRoute, NewFare
 from .serializers import (
     AgencySerializer,
     GeoRouteSerializer, RouteSerializer, RouteWithTripsSerializer,
@@ -110,8 +110,6 @@ class RideView(APIView):
     def post(self, request):
         json_data = json.loads(request.body)
 
-        print json_data
-
         data = json_data['data'][0]
 
         route_id = int(data['route_id'])
@@ -137,5 +135,37 @@ class RideView(APIView):
             departure_time = i['departure_time']
             new_stop = NewStop(ride=Ride.objects.get(id=ride_id), latitude=latitude, longitude=longitude, arrival_time=arrival_time, departure_time=departure_time)
             new_stop.save()
+
+        return Response({"success": True})
+
+
+class FareView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    @csrf_exempt
+    @method_decorator(public)
+    def post(self, request):
+        json_data = json.loads(request.body)
+
+        fare = NewFare()
+        fare.stop_to = json_data['stop_to']
+        fare.stop_from = json_data['stop_from']
+        fare.amount = json_data['amount']
+        fare.stop_from_id = json_data['stop_from_id']
+        fare.route_id = json_data['route_id']
+        fare.stop_to_id = json_data['stop_to_id']
+        fare.weather = json_data['weather']
+        fare.traffic_jam = json_data['traffic_jam']
+        fare.demand = json_data['demand']
+        fare.rush_hour = json_data['rush_hour']
+        fare.peak = json_data['peak']
+        fare.travel_time = json_data['travel_time']
+        fare.crowd = json_data['crowd']
+        fare.safety = json_data['safety']
+        fare.drive_safety = json_data['drive_safety']
+        fare.music = json_data['music']
+        fare.internet = json_data['internet']
+        fare.save()
 
         return Response({"success": True})
