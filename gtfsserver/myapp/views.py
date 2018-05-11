@@ -146,7 +146,7 @@ def trip_detail_view(request, **kwargs):
     cursor = connection.cursor()
     cursor.execute(
         "SELECT n.id, n.latitude, n.longitude FROM multigtfs_ride r JOIN multigtfs_newstop n ON(n.ride_id=r.id)"
-        " WHERE NOT(n.is_approved) AND r.route_id = " + kwargs['route_id'])
+        " WHERE r.route_id = " + kwargs['route_id'])
     columns = [column[0] for column in cursor.description]
     new_stops = []
 
@@ -155,8 +155,8 @@ def trip_detail_view(request, **kwargs):
     new_stops = yaml.load(json.dumps(new_stops))
 
     cursor.execute(
-        "SELECT CONCAT(n.longitude, ' ', n.latitude) FROM multigtfs_ride r JOIN multigtfs_newstop n ON(n.ride_id=r.id)"
-        " WHERE NOT(n.is_approved) AND r.route_id = " + kwargs['route_id'])
+        "SELECT CONCAT(n.longitude, ' ', n.latitude) FROM multigtfs_ride r JOIN multigtfs_newroute n ON(n.ride_id=r.id)"
+        " WHERE r.route_id = " + kwargs['route_id'])
     new_stops_route = []
 
     for row in cursor.fetchall():
@@ -165,8 +165,6 @@ def trip_detail_view(request, **kwargs):
             i = i.translate(None, "()#")
             new_stops_route.append(i)
     stops = Stop.objects.filter(parent_station__isnull=True).order_by('name')
-    print stops
-    print new_stops_route
 
     context['agency_id'] = kwargs['agency_id']
     context['feed_id'] = kwargs['feed_id']
