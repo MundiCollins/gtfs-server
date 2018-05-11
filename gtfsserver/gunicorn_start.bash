@@ -31,4 +31,5 @@ exec gunicorn ${DJANGO_WSGI_MODULE}:application \
   --user=$USER --group=$GROUP \
   --bind=unix:$SOCKFILE \
   --log-level=debug \
-  --log-file=-
+  --log-file=- \
+  --limit-request-line 8190
