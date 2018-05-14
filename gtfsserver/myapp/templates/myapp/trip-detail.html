@@ -70,7 +70,7 @@
                 }
             });
 
-            var GrayIconClass = L.Icon.Default.extend({
+            var OrangeIconClass = L.Icon.Default.extend({
                 options: {
                     iconUrl: "{% static 'img/marker-icon-gray.png' %}"
                 }
@@ -78,7 +78,7 @@
 
             var redIcon = new RedIconClass();
             var blueIcon = new BlueIconClass();
-            var grayIcon = new GrayIconClass();
+            var orangeIcon = new OrangeIconClass();
 
             var new_routes = '{{ new_stops_route }}';
 
@@ -192,7 +192,7 @@
                         lon: Number(new_stops[i].longitude),
                         id: new_stops[i].id,
                         type: 'break',
-                        icon: grayIcon,
+                        icon: orangeIcon,
                         name: 'new',
                         label: ''
                     });
@@ -203,7 +203,7 @@
                         lon: Number(new_stops[i].longitude),
                         id: new_stops[i].id,
                         type: 'through',
-                        icon: grayIcon,
+                        icon: orangeIcon,
                         name: 'new',
                         label: '',
                     });
