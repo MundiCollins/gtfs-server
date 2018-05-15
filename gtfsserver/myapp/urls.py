@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, url
+from django.contrib.auth.decorators import login_required
 
 from .views import (AgencyListView, RouteListView, RouteDetailView, FeedListView, StopListJSONView, ParentStopListJSONView,
                     trip_detail_view, add_stop_ajax, get_route_ajax, update_stop_ajax, delete_stop_ajax,
@@ -7,36 +8,36 @@ from .views import (AgencyListView, RouteListView, RouteDetailView, FeedListView
 
 urlpatterns = patterns(
     '',
-    url(r'gtfs/$', FeedListView.as_view(), name='feed_list'),
-    url(r'gtfs/(?P<feed_id>\d+)/agency/$', AgencyListView.as_view(), name='agency_list'),
-    url(r'gtfs/(?P<feed_id>\d+)/agency/(?P<agency_id>\d+)/route/$', RouteListView.as_view(), name='route_list'),
-    url(r'gtfs/(?P<feed_id>\d+)/agency/(?P<agency_id>\d+)/route/(?P<pk>\d+)/$', RouteDetailView.as_view(), name='route_detail'),
-    url(r'gtfs/(?P<feed_id>\d+)/agency/(?P<agency_id>\d+)/new-route$', new_route, name='new_route'),
+    url(r'gtfs/$', login_required(FeedListView.as_view()), name='feed_list'),
+    url(r'gtfs/(?P<feed_id>\d+)/agency/$', login_required(AgencyListView.as_view()), name='agency_list'),
+    url(r'gtfs/(?P<feed_id>\d+)/agency/(?P<agency_id>\d+)/route/$', login_required(RouteListView.as_view()), name='route_list'),
+    url(r'gtfs/(?P<feed_id>\d+)/agency/(?P<agency_id>\d+)/route/(?P<pk>\d+)/$', login_required(RouteDetailView.as_view()), name='route_detail'),
+    url(r'gtfs/(?P<feed_id>\d+)/agency/(?P<agency_id>\d+)/new-route$', login_required(new_route), name='new_route'),
 
-    url(r'gtfs/(?P<feed_id>\d+)/export/$', export_feed, name='export_feed'),
+    url(r'gtfs/(?P<feed_id>\d+)/export/$', login_required(export_feed), name='export_feed'),
 
-    url(r'gtfs/(?P<feed_id>\d+)/agency/(?P<agency_id>\d+)/route/(?P<route_id>\d+)/trip/(?P<pk>\d+)/$', trip_detail_view, name='trip_detail'),
-    url(r'gtfs/(?P<feed_id>\d+)/agency/(?P<agency_id>\d+)/route/(?P<route_id>\d+)/new-trip/$', new_trip, name='new_trip'),
+    url(r'gtfs/(?P<feed_id>\d+)/agency/(?P<agency_id>\d+)/route/(?P<route_id>\d+)/trip/(?P<pk>\d+)/$', login_required(trip_detail_view), name='trip_detail'),
+    url(r'gtfs/(?P<feed_id>\d+)/agency/(?P<agency_id>\d+)/route/(?P<route_id>\d+)/new-trip/$', login_required(new_trip), name='new_trip'),
 
-    url(r'gtfs/(?P<feed_id>\d+)/stops.json/', StopListJSONView.as_view(), name='get_stop_list_ajax'),
-    url(r'gtfs/(?P<feed_id>\d+)/parentstops.json/', ParentStopListJSONView.as_view(), name='get_parent_stop_list_ajax'),
+    url(r'gtfs/(?P<feed_id>\d+)/stops.json/', login_required(StopListJSONView.as_view()), name='get_stop_list_ajax'),
+    url(r'gtfs/(?P<feed_id>\d+)/parentstops.json/', login_required(ParentStopListJSONView.as_view()), name='get_parent_stop_list_ajax'),
 
-    url(r'gtfs/stop.json/', add_stop_ajax, name='add_stop_ajax'),
-    url(r'gtfs/route.json/', get_route_ajax, name='get_route_ajax'),
+    url(r'gtfs/stop.json/', login_required(add_stop_ajax), name='add_stop_ajax'),
+    url(r'gtfs/route.json/', login_required(get_route_ajax), name='get_route_ajax'),
 
-    url(r'gtfs/updatestop.json/', update_stop_ajax, name='update_stop_ajax'),
-    url(r'gtfs/updateroute.json/', update_route_ajax, name='update_route_ajax'),
-    url(r'gtfs/updatetrip.json/', update_trip_ajax, name='update_trip_ajax'),
-    url(r'gtfs/updateshape.json/', update_shape_ajax, name='update_shape_ajax'),
-    url(r'gtfs/updatefeed.json/', update_feed_ajax, name='update_feed_ajax'),
-    url(r'gtfs/updateagency.json/', update_agency_ajax, name='update_agency_ajax'),
+    url(r'gtfs/updatestop.json/', login_required(update_stop_ajax), name='update_stop_ajax'),
+    url(r'gtfs/updateroute.json/', login_required(update_route_ajax), name='update_route_ajax'),
+    url(r'gtfs/updatetrip.json/', login_required(update_trip_ajax), name='update_trip_ajax'),
+    url(r'gtfs/updateshape.json/', login_required(update_shape_ajax), name='update_shape_ajax'),
+    url(r'gtfs/updatefeed.json/', login_required(update_feed_ajax), name='update_feed_ajax'),
+    url(r'gtfs/updateagency.json/', login_required(update_agency_ajax), name='update_agency_ajax'),
 
-    url(r'gtfs/deletestop.json/', delete_stop_ajax, name='delete_stop_ajax'),
-    url(r'gtfs/deleteroute.json/', delete_route_ajax, name='delete_route_ajax'),
-    url(r'gtfs/deletetrip.json/', delete_trip_ajax, name='delete_trip_ajax'),
-    url(r'gtfs/deletefeed.json/', delete_feed_ajax, name='delete_feed_ajax'),
+    url(r'gtfs/deletestop.json/', login_required(delete_stop_ajax), name='delete_stop_ajax'),
+    url(r'gtfs/deleteroute.json/', login_required(delete_route_ajax), name='delete_route_ajax'),
+    url(r'gtfs/deletetrip.json/', login_required(delete_trip_ajax), name='delete_trip_ajax'),
+    url(r'gtfs/deletefeed.json/', login_required(delete_feed_ajax), name='delete_feed_ajax'),
 
-    url(r'gtfs/new-feed/$', new_feed, name='new_feed'),
+    url(r'gtfs/new-feed/$', login_required(new_feed), name='new_feed'),
 
-    url(r'gtfs/confirmstop.json/', confirm_stop_ajax, name='confirm_stop_ajax'),
+    url(r'gtfs/confirmstop.json/', login_required(confirm_stop_ajax), name='confirm_stop_ajax'),
 )

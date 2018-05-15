@@ -24,7 +24,7 @@ urlpatterns = [
     url(r'^$', login_required(FeedListView.as_view()), name='home'),
     url(r'^api/', include('gtfsapi.urls')),
     url(r'^apidocs/', include('rest_framework_swagger.urls')),
-    url(r'^explore', login_required(include('myapp.urls'))),
+    url(r'^explore', include('myapp.urls')),
     url(r'^login/$', auth_views.login, name='login'),
     url(r'^logout/$', auth_views.logout, name='logout'),
 ]
