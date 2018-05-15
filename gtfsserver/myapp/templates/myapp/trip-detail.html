@@ -348,12 +348,11 @@
                 var layers_count = 0;
                 // change color of new route
                 map.eachLayer(function(layer){
-                    console.log(count);
-                    console.log(layer);
-
-                    ++layers_count;
-                    if(layers_count === 2) {
-                        layer.setStyle({color :'#000000'});
+                    if(layer._path) {
+                        ++layers_count;
+                        if (layers_count === 2) {
+                            layer.setStyle({color: '#000000'});
+                        }
                     }
                 });
             });
