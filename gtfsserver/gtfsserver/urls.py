@@ -16,11 +16,12 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_required
 from myapp.views import FeedListView
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', FeedListView.as_view(), name='home'),
+    url(r'^$', login_required(FeedListView.as_view()), name='home'),
     url(r'^api/', include('gtfsapi.urls')),
     url(r'^apidocs/', include('rest_framework_swagger.urls')),
     url(r'^explore', include('myapp.urls')),

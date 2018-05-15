@@ -42,7 +42,16 @@
             var wkt = new Wkt.Wkt();
             var wkt_object;
             var wkt_object_inline;
-            var wkt1 = new Wkt.Wkt();
+            var myStyle = new L.Style({
+                fill: new L.Style.Fill({
+                    color: 'rgba(255, 100, 100, 0.3)'
+                }),
+                stroke: new L.Style.Stroke({
+                    color: 'rgba(255, 80, 80, 0.9)',
+                    width: 2
+                })
+            });
+            var wkt1 = new Wkt.Wkt({style:myStyle});
             var wkt1_object;
             var wkt1_object_inline;
             var markers;
