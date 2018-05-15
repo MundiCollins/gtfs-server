@@ -371,6 +371,13 @@
 
                 new_route.addTo(map);
 
+                // change color of new route
+                map.eachLayer(function(layer){
+                    if(layer._path && layer.options.fill) {
+                        layer.setStyle({color :'#ff3333'});
+                    }
+                });
+
                 // Clean up existing stop markers
                 if (markers1) {
                     $.map(markers, function (marker) {

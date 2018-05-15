@@ -135,8 +135,9 @@ function generateNewRoute(routing_server_url, waypoints) {
         } catch (e) {}
 
          var polyline = L.polyline(route, {
-                stroke: 'red',
-                color: 'red',
+                stroke: true,
+                fill: true,
+                color: '#ff3333',
                 weight: 5,
                 opacity: 0.5,
                 smoothFactor: 1
