@@ -371,13 +371,6 @@
 
                 new_route.addTo(map);
 
-                // change color of new route
-                map.eachLayer(function(layer){
-                    if(layer._path) {
-                        layer.setStyle({color :'#ff3333'});
-                    }
-                });
-
                 // Clean up existing stop markers
                 if (markers1) {
                     $.map(markers, function (marker) {
@@ -391,6 +384,13 @@
 
                 //update new inline markers
                 markers_inline1 = getMarkersFromWaypoints(waypoints1);
+
+                // change color of new route
+                map.eachLayer(function(layer){
+                    if(layer._path && !layer.options.fill) {
+                        layer.setStyle({color :'#000000'});
+                    }
+                });
             });
 
             $('#stop-form').on('submit', function (event) {

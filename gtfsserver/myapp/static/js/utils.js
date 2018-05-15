@@ -89,6 +89,7 @@ function generateRoute(routing_server_url, waypoints) {
 
          var polyline = L.polyline(route, {
                 color: 'blue',
+                fill: true,
                 weight: 5,
                 opacity: 0.5,
                 smoothFactor: 1
@@ -136,7 +137,7 @@ function generateNewRoute(routing_server_url, waypoints) {
 
          var polyline = L.polyline(route, {
                 stroke: true,
-                fill: true,
+                fill: false,
                 color: '#ff3333',
                 weight: 5,
                 opacity: 0.5,
