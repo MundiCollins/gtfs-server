@@ -110,31 +110,28 @@ class RideView(APIView):
     def post(self, request):
         json_data = json.loads(request.body)
 
-        data = json_data['data'][0]
+        for data in json_data['data']:
+            route_id = int(data['route_id'])
+            routes = data['route']
+            stops = data['stops']
 
-        route_id = int(data['route_id'])
-        routes = data['route']
-        stops = data['stops']
+            ride = Ride(route=Route.objects.get(id=route_id))
+            ride.save()
+            ride_id = ride.id
 
-        ride = Ride(route=Route.objects.get(id=route_id))
-        ride.save()
-        ride_id = ride.id
+            for i in routes:
+                route = NewRoute(ride=Ride.objects.get(id=ride_id), latitude=i['latitude'], longitude=i['longitude'],
+                                 time=i['time'])
+                route.save()
 
-        print route_id
-        print routes
-        print stops
-
-        for i in routes:
-            route = NewRoute(ride=Ride.objects.get(id=ride_id), latitude=i['latitude'], longitude=i['longitude'], time=i['time'])
-            route.save()
-
-        for i in stops:
-            latitude = i['latitude']
-            longitude = i['longitude']
-            arrival_time = i['arrival_time']
-            departure_time = i['departure_time']
-            new_stop = NewStop(ride=Ride.objects.get(id=ride_id), latitude=latitude, longitude=longitude, arrival_time=arrival_time, departure_time=departure_time)
-            new_stop.save()
+            for i in stops:
+                latitude = i['latitude']
+                longitude = i['longitude']
+                arrival_time = i['arrival_time']
+                departure_time = i['departure_time']
+                new_stop = NewStop(ride=Ride.objects.get(id=ride_id), latitude=latitude, longitude=longitude,
+                                   arrival_time=arrival_time, departure_time=departure_time)
+                new_stop.save()
 
         return Response({"success": True})
 
