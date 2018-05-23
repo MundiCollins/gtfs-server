@@ -55,7 +55,6 @@ function chunkArray(waypoints, groupSize) {
 }
 
 function generateRoute(routing_server_url, waypoints) {
-    // console.log(waypoints);
     var wps = $.map(waypoints, function (waypoint) {
         return {lat: waypoint.lat, lon: waypoint.lon, name: waypoint.name, type: waypoint.type}
     });
@@ -75,14 +74,12 @@ function generateRoute(routing_server_url, waypoints) {
 
     var route = [];
     $.when.apply($, promises).then(function () {
-        //response format [data, textStatus, jqXHR]
         if (promises.length == 1) {
             arguments = [arguments]
         }
         try {
             for (var i = 0; i < arguments.length; i++) {
                 var json = JSON.parse(arguments[i][0]);
-                // console.log(json);
                 route = route.concat(decodePolyline(json.trip.legs[0].shape));
             }
         } catch (e) {}
@@ -102,7 +99,6 @@ function generateRoute(routing_server_url, waypoints) {
 }
 
 function generateNewRoute(routing_server_url, waypoints) {
-    // console.log(waypoints);
     var wps = $.map(waypoints, function (waypoint) {
         return {lat: waypoint.lat, lon: waypoint.lon, name: waypoint.name, type: waypoint.type}
     });
@@ -129,7 +125,6 @@ function generateNewRoute(routing_server_url, waypoints) {
         try {
             for (var i = 0; i < arguments.length; i++) {
                 var json = JSON.parse(arguments[i][0]);
-                // console.log(json);
                 route = route.concat(decodePolyline(json.trip.legs[0].shape));
             }
         } catch (e) {}
@@ -195,7 +190,6 @@ function updateTrip(url, data) {
 
     jqxhr.fail(function (jqXHR, status, error) {
         $(document).trigger('error', {message: 'Failed due to: ' + status + " " + error});
-        // console.log(jqXHR.responseText);
     });
 }
 
@@ -297,7 +291,6 @@ function delete_trip(url, params){
     });
 
     request.done(function (result) {
-        // console.log(result);
         $(document).trigger('success', {message: result});
     });
 
@@ -356,8 +349,6 @@ function insertWaypoint(map, newWaypoint, waypoints) {
         }
     }
 
-    //console.log(waypoints[index]);
-    //console.log(insert_after, angle);
     // Get the corresponding stop on the list
     var anchorElement = $('#current-stops form > ul').children().eq(index);
 
@@ -392,7 +383,6 @@ function insertWaypoint(map, newWaypoint, waypoints) {
 
 function confirmStop(url, data) {
     var jqxhr = $.post(url, data, function (stop) {
-        console.log(stop);
         $(document).trigger('success', {message: "Successfully added stop " + data.name})
     }, 'json');
 

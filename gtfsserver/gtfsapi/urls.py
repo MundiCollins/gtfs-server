@@ -1,8 +1,6 @@
-from django.conf.urls import include, url
-#from rest_framework.routers import SimpleRouter
+from django.conf.urls import url
 from rest_framework_nested import routers
 from django.views.decorators.csrf import csrf_exempt
-from stronghold.decorators import public
 
 from .views import (
     FeedViewSet, FeedGeoViewSet, AgencyViewSet, ServiceViewSet, RouteViewSet,

@@ -50,8 +50,6 @@
             var markers1;
             var markers_inline1;
             var map = L.map('map', {crs: L.CRS.EPSG4326});
-            // var ourmap = L.map('maps', {cdr: L.CRS.EPSG4326});
-            var original_route;
             var generated_route;
             var new_route;
             var inline_map = L.map('inline-map', {crs: L.CRS.EPSG4326});
@@ -99,12 +97,6 @@
             wkt.read('{{ trip.geometry.wkt }}');
 
             // Main map
-            // Tangram.leafletLayer({
-            //     scene: 'https://raw.githubusercontent.com/tangrams/cinnabar-style/gh-pages/cinnabar-style.yaml?api_key=L9OxhE2tToG23EKZgjKTUA',
-            //     attribution: '<a href="https://mapzen.com/tangram" target="_blank">Tangram</a> | \
-            //                   <a href="http://www.openstreetmap.org/about" target="_blank">&copy; OSM contributors | \
-            //                   <a href="https://mapzen.com/" target="_blank">Mapzen</a>',
-            // }).addTo(map);
             L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png?api_key=L9OxhE2tToG23EKZgjKTUA', {
                 attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
