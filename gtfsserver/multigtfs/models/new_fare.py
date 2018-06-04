@@ -35,7 +35,7 @@ class NewFare(Base):
         max_length=255, blank=True, null=True,)
     demand = models.CharField(
         max_length=255, blank=True, null=True,)
-    rush_hour = models.CharField(
+    air_quality = models.CharField(
         max_length=255, blank=True, null=True,)
     peak = models.CharField(
         max_length=255, blank=True, null=True,)

@@ -155,7 +155,7 @@ class FareView(APIView):
         fare.weather = json_data['weather']
         fare.traffic_jam = json_data['traffic_jam']
         fare.demand = json_data['demand']
-        fare.rush_hour = json_data['rush_hour']
+        fare.air_quality = json_data['air_quality']
         fare.peak = json_data['peak']
         fare.travel_time = json_data['travel_time']
         fare.crowd = json_data['crowd']
