@@ -18,10 +18,15 @@ class Ride(Base):
     To reference new stops data in the GTFS feed.
     """
     route = models.ForeignKey('Route')
-    new_route = models.BooleanField(default=False)
     route_name = models.CharField(
         max_length=255, blank=True, null=True,
         help_text='The name of the route')
+    new_route = models.CharField(
+        max_length=255, default='false',
+        help_text='Whether it is an existing or new route')
+    direction = models.CharField(
+        max_length=255, blank=True, null=True,
+        help_text='Whether inbound or outbound')
     route_description = models.CharField(
         max_length=255, blank=True, null=True,
         help_text='A description of the route')
@@ -40,6 +45,9 @@ class Ride(Base):
     start_time = models.CharField(
         max_length=255, blank=True, null=True,
         help_text='What time the recording started')
+    duration = models.CharField(
+        max_length=255, blank=True, null=True,
+        help_text='How long the trip took')
     surveyor_name = models.CharField(
         max_length=255, blank=True, null=True,
         help_text='Who captured the ride')

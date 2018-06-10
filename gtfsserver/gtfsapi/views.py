@@ -111,7 +111,7 @@ class RideView(APIView):
         json_data = json.loads(request.body)
 
         for data in json_data['data']:
-            if data['new_route']:
+            if data['new_route'] == 'true':
                 route = Route.objects.get(route_id='new')
                 route_id = route.id
                 route_name = route.short_name
@@ -124,12 +124,14 @@ class RideView(APIView):
             ride = Ride(route=Route.objects.get(id=route_id),
                         new_route=data['new_route'],
                         route_name=route_name,
+                        direction=data['direction'],
                         route_description=data['description'],
                         notes=data['notes'],
                         vehicle_capacity=data['vehicle_capacity'],
                         vehicle_type=data['vehicle_type'],
                         vehicle_full=data['vehicle_full'],
                         start_time=data['start_time'],
+                        duration=data['trip_duration'],
                         surveyor_name=data['surveyor_name'])
             ride.save()
             ride_id = ride.id
