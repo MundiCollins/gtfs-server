@@ -142,11 +142,12 @@ def trip_detail_view(request, **kwargs):
 
     corridor_prefix = trip.route.route_id[0].zfill(2)
     inbound_status = trip.direction
+    direction = 'inbound' if inbound_status == 1 else 'outbound'
 
     cursor = connection.cursor()
     cursor.execute(
         "SELECT n.id, n.latitude, n.longitude FROM multigtfs_ride r JOIN multigtfs_newstop n ON(n.ride_id=r.id)"
-        " WHERE r.route_id = " + kwargs['route_id'])
+        " WHERE r.route_id = " + kwargs['route_id'] + " AND r.direction = '" + direction + "'")
     columns = [column[0] for column in cursor.description]
     new_stops = []
 
