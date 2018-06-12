@@ -1,4 +1,6 @@
 import json
+import random
+
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.mixins import ListModelMixin
 from rest_framework.filters import DjangoFilterBackend
@@ -11,12 +13,13 @@ from rest_framework.response import Response
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.views import APIView
 
-from django.db.models import Q
+from django.db import transaction
+from django.contrib.gis import geos
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from stronghold.decorators import public
 
-from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip, StopTime, Ride, NewStop, NewRoute, NewFare
+from multigtfs.models import Agency, Route, Stop, Feed, Service, ServiceDate, Trip, StopTime, Ride, NewStop, NewRoute, NewFare, Shape, ShapePoint
 from .serializers import (
     AgencySerializer,
     GeoRouteSerializer, RouteSerializer, RouteWithTripsSerializer,
@@ -101,6 +104,47 @@ class StopTimeViewSet(ReadOnlyModelViewSet):
     queryset = StopTime.objects.all()
 
 
+class NewRouteView(APIView):
+    @csrf_exempt
+    @method_decorator(public)
+    def post(self, request):
+        try:
+            json_data = json.loads(request.body)
+            data = json_data['data']
+            agency_id = 1  # hard-coded for digital matatus
+            feed_id = 1  # hard-coded for digital matatus data
+
+            # create a new route
+            request_params = data['new_route_details']
+            # prepend zeros to the route number
+            request_params['route-number'] = request_params['route-number'].zfill(4)
+
+            route_mask = "{corridor}{first-level-branch}{second-level-branch}{route-number}{gazetted}{inbound}"
+            params = {
+                'route_id': route_mask.format(**request_params),
+                'short_name': request_params.get('route-number'),
+                'desc': request_params.get('description'),
+                'rtype': request_params.get('route-type'),
+                'agency_id': agency_id,
+                'feed_id': feed_id
+            }
+
+            route = Route(**params)
+            route.save()
+            route.refresh_from_db()
+
+            # Create route + shape
+            context = dict()
+            context['route_id'] = route.id
+            context['route_name'] = route.short_name
+            context['headsign_options'] = route.desc.split('-')
+            context['service_times'] = Service.objects.all()
+
+            return Response({"success": True, "result": context})
+        except Exception as e:
+            return Response({"success": False, "result": e})
+
+
 class RideView(APIView):
     authentication_classes = []
     permission_classes = []
@@ -112,9 +156,103 @@ class RideView(APIView):
 
         for data in json_data['data']:
             if data['new_route'] == 'true':
-                route = Route.objects.get(route_id='new')
-                route_id = route.id
-                route_name = route.short_name
+                agency_id = 1  # hard-coded for digital matatus
+                feed_id = 1  # hard-coded for digital matatus data
+
+                request_params = data['new_route_details']
+                # prepend zeros to the route number
+                request_params['route-number'] = request_params['route-number'].zfill(4)
+
+                route_mask = "{corridor}{first-level-branch}{second-level-branch}{route-number}{gazetted}{inbound}"
+                params = {
+                    'route_id': route_mask.format(**request_params),
+                    'short_name': request_params.get('route-number'),
+                    'desc': request_params.get('description'),
+                    'rtype': request_params.get('route-type'),
+                    'agency_id': agency_id,
+                    'feed_id': feed_id
+                }
+
+                # create a new trip
+                # Trip variables
+                headsign = request_params['headsign']
+                service_id = request_params['service-id']
+                direction = data['inbound']
+                route_id = route_id
+
+                # corridor + 4 characters for the route number
+                corridor = route_id[0]
+                route_number = route_id[5:9]
+                origin = request_params['origin']
+                route_variation = request_params['route-variation']
+                shape_id = "{}{}{}{}{}".format(corridor, route_number, origin, route_variation, direction)
+
+                trip_id = shape_id
+                with transaction.atomic():
+                    # Create new shape
+                    shape = Shape(
+                        feed_id=feed_id,
+                        shape_id=shape_id)
+                    shape.save()
+
+                    trip = Trip(
+                        trip_id=trip_id,
+                        headsign=headsign,
+                        service_id=service_id,
+                        direction=direction,
+                        route_id=route_id,
+                        shape_id=shape.id
+                    )
+                    trip.save()
+
+                    # Create shape points from the uploaded shape files
+                    shapes = shape_file.shapes()
+
+                    sequence_start = 1001
+                    # The  trip line string is stored in layer 1
+                    for idx, point in enumerate(shapes[1].points):
+                        shape_point = ShapePoint(
+                            point='POINT ({} {})'.format(point[0], point[1]),
+                            shape_id=shape.id,
+                            sequence=sequence_start + idx
+                        )
+
+                        shape_point.save()
+                    shape.update_geometry()
+
+                    start_seconds = 6 * 3600  # First trip is at 6am
+                    delta = 5 * 60  # % minutes
+
+                    for row in stops_reader:
+                        tmp = list(row['stop_name'].upper().replace(' ', ''))
+                        random.shuffle(tmp)
+                        stop_suffix = "".join(tmp[:3])  # pick 3 characters from the shuffled stop name
+
+                        stop, created = Stop.objects.get_or_create(
+                            point=geos.fromstr('POINT({} {})'.format(row['lon'], row['lat'])),
+                            feed_id=feed_id,
+                            defaults={
+                                'stop_id': '{}{}{}{}'.format(corridor.zfill(2), row['designation'] or 0, direction,
+                                                             stop_suffix),
+                                'name': row['stop_name'],
+                                'location_type': row['location_type'],
+                            }
+                        )
+
+                        trip.stoptime_set.add(StopTime(stop_id=stop.id,
+                                                       trip_id=trip.id,
+                                                       stop_sequence=int(row['stop_sequence']) + 1,
+                                                       arrival_time=start_seconds,
+                                                       departure_time=start_seconds
+                                                       ))
+                        start_seconds += delta
+
+                    trip.save()
+                    trip.update_geometry()
+                    trip.refresh_from_db()
+
+
+
             else:
                 route_id = int(data['route_id'])
                 route_name = data['route_name']
@@ -124,7 +262,7 @@ class RideView(APIView):
             ride = Ride(route=Route.objects.get(id=route_id),
                         new_route=data['new_route'],
                         route_name=route_name,
-                        direction=data['direction'],
+                        direction='inbound' if data['inbound'] == '1' else 'outbound',
                         route_description=data['description'],
                         notes=data['notes'],
                         vehicle_capacity=data['vehicle_capacity'],

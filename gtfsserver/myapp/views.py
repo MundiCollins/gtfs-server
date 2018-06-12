@@ -450,6 +450,7 @@ def new_route(request, **kwargs):
         try:
             # Build route_id
             request_params = request.POST.dict()
+            print(request_params)
             # prepend zeros to the route number
             request_params['route-number'] = request_params['route-number'].zfill(4)
 
