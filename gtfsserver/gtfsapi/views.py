@@ -116,15 +116,16 @@ class NewRouteView(APIView):
 
             # create a new route
             request_params = data['new_route_details']
-            # prepend zeros to the route number
-            request_params['route-number'] = request_params['route-number'].zfill(4)
 
-            route_mask = "{corridor}{first-level-branch}{second-level-branch}{route-number}{gazetted}{inbound}"
+            # prepend zeros to the route number
+            request_params['route_number'] = request_params['route_number'].zfill(4)
+
+            route_mask = "{corridor}{first_level_branch}{second_level_branch}{route_number}{gazetted}{inbound}"
             params = {
                 'route_id': route_mask.format(**request_params),
-                'short_name': request_params.get('route-number'),
+                'short_name': request_params.get('route_number'),
                 'desc': request_params.get('description'),
-                'rtype': request_params.get('route-type'),
+                'rtype': "3",  # hard-coded for bus type
                 'agency_id': agency_id,
                 'feed_id': feed_id
             }
@@ -133,12 +134,17 @@ class NewRouteView(APIView):
             route.save()
             route.refresh_from_db()
 
+            options = dict()
+            for i in range(1, 10):
+                options[i] = i
+
             # Create route + shape
             context = dict()
             context['route_id'] = route.id
             context['route_name'] = route.short_name
             context['headsign_options'] = route.desc.split('-')
-            context['service_times'] = Service.objects.all()
+            context['origins'] = options
+            context['route_variations'] = options
 
             return Response({"success": True, "result": context})
         except Exception as e:
@@ -156,35 +162,24 @@ class RideView(APIView):
 
         for data in json_data['data']:
             if data['new_route'] == 'true':
-                agency_id = 1  # hard-coded for digital matatus
-                feed_id = 1  # hard-coded for digital matatus data
-
-                request_params = data['new_route_details']
-                # prepend zeros to the route number
-                request_params['route-number'] = request_params['route-number'].zfill(4)
-
-                route_mask = "{corridor}{first-level-branch}{second-level-branch}{route-number}{gazetted}{inbound}"
-                params = {
-                    'route_id': route_mask.format(**request_params),
-                    'short_name': request_params.get('route-number'),
-                    'desc': request_params.get('description'),
-                    'rtype': request_params.get('route-type'),
-                    'agency_id': agency_id,
-                    'feed_id': feed_id
-                }
-
                 # create a new trip
+
+                feed_id = 1  # hard-coded for digital matatus data
+                request_params = data['new_trip_details']
+
                 # Trip variables
                 headsign = request_params['headsign']
-                service_id = request_params['service-id']
-                direction = data['inbound']
-                route_id = route_id
+                service_id = "1"  # hard-coded:
+                origin = request_params['origin']
+                route_variation = request_params['route_variation']
+                direction = 1 if data['direction'] == 'inbound' else 0
+                route_id = int(data['route_id'])
+                route = Route.objects.get(id=route_id)
 
                 # corridor + 4 characters for the route number
-                corridor = route_id[0]
-                route_number = route_id[5:9]
-                origin = request_params['origin']
-                route_variation = request_params['route-variation']
+                corridor = route.route_id[0]
+                route_number = route.route_id[5:9]
+
                 shape_id = "{}{}{}{}{}".format(corridor, route_number, origin, route_variation, direction)
 
                 trip_id = shape_id
@@ -206,87 +201,89 @@ class RideView(APIView):
                     trip.save()
 
                     # Create shape points from the uploaded shape files
-                    shapes = shape_file.shapes()
+                    # shape_file = shapefile.Reader(shp=request.FILES['shape-file'], dbf=request.FILES['shape-file-dbf'])
+                    # shapes = shape_file.shapes()
 
-                    sequence_start = 1001
-                    # The  trip line string is stored in layer 1
-                    for idx, point in enumerate(shapes[1].points):
+                    sequence_start = 2001
+                    shape_key = 0
+
+                    for i in data['route']:
                         shape_point = ShapePoint(
-                            point='POINT ({} {})'.format(point[0], point[1]),
+                            point='POINT ({} {})'.format(i['longitude'], i['latitude']),
                             shape_id=shape.id,
-                            sequence=sequence_start + idx
+                            sequence=sequence_start + shape_key
                         )
-
                         shape_point.save()
+                        shape_key += 1
+
                     shape.update_geometry()
 
                     start_seconds = 6 * 3600  # First trip is at 6am
                     delta = 5 * 60  # % minutes
+                    stop_sequence = 0
 
-                    for row in stops_reader:
+                    for row in data['stops']:
                         tmp = list(row['stop_name'].upper().replace(' ', ''))
                         random.shuffle(tmp)
                         stop_suffix = "".join(tmp[:3])  # pick 3 characters from the shuffled stop name
 
                         stop, created = Stop.objects.get_or_create(
-                            point=geos.fromstr('POINT({} {})'.format(row['lon'], row['lat'])),
+                            point=geos.fromstr('POINT({} {})'.format(row['longitude'], row['latitude'])),
                             feed_id=feed_id,
                             defaults={
                                 'stop_id': '{}{}{}{}'.format(corridor.zfill(2), row['designation'] or 0, direction,
                                                              stop_suffix),
-                                'name': row['stop_name'],
-                                'location_type': row['location_type'],
+                                'name': row['stop_name']
                             }
                         )
 
-                        trip.stoptime_set.add(StopTime(stop_id=stop.id,
-                                                       trip_id=trip.id,
-                                                       stop_sequence=int(row['stop_sequence']) + 1,
-                                                       arrival_time=start_seconds,
-                                                       departure_time=start_seconds
-                                                       ))
+                        trip.stoptime_set.add(StopTime(
+                            stop_id=stop.id,
+                            trip_id=trip.id,
+                            stop_sequence=stop_sequence + 1,
+                            arrival_time=start_seconds,
+                            departure_time=start_seconds
+                        ))
                         start_seconds += delta
 
                     trip.save()
                     trip.update_geometry()
                     trip.refresh_from_db()
 
-
-
             else:
                 route_id = int(data['route_id'])
                 route_name = data['route_name']
-            routes = data['route']
-            stops = data['stops']
+                routes = data['route']
+                stops = data['stops']
 
-            ride = Ride(route=Route.objects.get(id=route_id),
-                        new_route=data['new_route'],
-                        route_name=route_name,
-                        direction='inbound' if data['inbound'] == '1' else 'outbound',
-                        route_description=data['description'],
-                        notes=data['notes'],
-                        vehicle_capacity=data['vehicle_capacity'],
-                        vehicle_type=data['vehicle_type'],
-                        vehicle_full=data['vehicle_full'],
-                        start_time=data['start_time'],
-                        duration=data['trip_duration'],
-                        surveyor_name=data['surveyor_name'])
-            ride.save()
-            ride_id = ride.id
+                ride = Ride(route=Route.objects.get(id=route_id),
+                            new_route=data['new_route'],
+                            route_name=route_name,
+                            direction='inbound' if data['inbound'] == '1' else 'outbound',
+                            route_description=data['description'],
+                            notes=data['notes'],
+                            vehicle_capacity=data['vehicle_capacity'],
+                            vehicle_type=data['vehicle_type'],
+                            vehicle_full=data['vehicle_full'],
+                            start_time=data['start_time'],
+                            duration=data['trip_duration'],
+                            surveyor_name=data['surveyor_name'])
+                ride.save()
+                ride_id = ride.id
 
-            for i in routes:
-                route = NewRoute(ride=Ride.objects.get(id=ride_id), latitude=i['latitude'], longitude=i['longitude'],
-                                 time=i['time'])
-                route.save()
+                for i in routes:
+                    route = NewRoute(ride=Ride.objects.get(id=ride_id), latitude=i['latitude'], longitude=i['longitude'],
+                                     time=i['time'])
+                    route.save()
 
-            for i in stops:
-                latitude = i['latitude']
-                longitude = i['longitude']
-                arrival_time = i['arrival_time']
-                departure_time = i['departure_time']
-                new_stop = NewStop(ride=Ride.objects.get(id=ride_id), latitude=latitude, longitude=longitude,
-                                   arrival_time=arrival_time, departure_time=departure_time)
-                new_stop.save()
+                for i in stops:
+                    latitude = i['latitude']
+                    longitude = i['longitude']
+                    arrival_time = i['arrival_time']
+                    departure_time = i['departure_time']
+                    new_stop = NewStop(ride=Ride.objects.get(id=ride_id), latitude=latitude, longitude=longitude,
+                                       arrival_time=arrival_time, departure_time=departure_time)
+                    new_stop.save()
 
         return Response({"success": True})
 

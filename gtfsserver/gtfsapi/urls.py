@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .views import (
     FeedViewSet, FeedGeoViewSet, AgencyViewSet, ServiceViewSet, RouteViewSet,
-    TripViewSet, StopViewSet, ServiceDateViewSet, StopTimeViewSet, RideView, FareView)
+    TripViewSet, StopViewSet, ServiceDateViewSet, StopTimeViewSet, NewRouteView, RideView, FareView)
 from .nested_views import (
     FeedAgencyViewSet, FeedRouteViewSet, FeedGeoRouteViewSet,
     FeedStopViewSet, FeedGeoStopViewSet,
@@ -30,6 +30,7 @@ router.register(r'stop-times', StopTimeViewSet)
 router.register(r'services', ServiceViewSet)
 router.register(r'service-dates', ServiceDateViewSet)
 router.register(r'trips', TripViewSet)
+router.register(r'new_route', csrf_exempt(NewRouteView), base_name='ride')
 router.register(r'ride', csrf_exempt(RideView), base_name='ride')
 router.register(r'fare', csrf_exempt(FareView), base_name='fare')
 
@@ -95,6 +96,7 @@ urls = [
     url(u'^feeds/(?P<feed_pk>[^/]+)/trajectories-today/(?P<hour>\d+)/(?P<bbox>[^/]+)/$', TrajectoriesView.as_view(), name="trajectories"),
     url(u'^feeds/(?P<feed_pk>[^/]+)/trajectories-now/(?P<bbox>[^/]+)/$', TrajectoriesView.as_view(), name="trajectories"),
 
+    url(u'^new_route/', csrf_exempt(NewRouteView.as_view()), name="route"),
     url(u'^ride/', csrf_exempt(RideView.as_view()), name="ride"),
     url(u'^fare/', csrf_exempt(FareView.as_view()), name="fare"),
 
