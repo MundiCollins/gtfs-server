@@ -175,7 +175,15 @@
                 });
             {% endfor %}
 
+            console.log(new_stops);
             for(var i=0; i<new_stops_num; ++i) {
+                var name = '';
+                if(/\S/.test(new_stops[i].name)) {
+                    name = new_stops[i].name;
+                }
+                else {
+                    name = 'new';
+                }
                 if(i === 0 || i === new_stops_num - 1) {
                     waypoints1.push({
                         lat: Number(new_stops[i].latitude),
@@ -183,7 +191,7 @@
                         id: new_stops[i].id,
                         type: 'break',
                         icon: orangeIcon,
-                        name: 'new',
+                        name: name,
                         label: ''
                     });
                 }
@@ -194,7 +202,7 @@
                         id: new_stops[i].id,
                         type: 'through',
                         icon: orangeIcon,
-                        name: 'new',
+                        name: name,
                         label: '',
                     });
                 }

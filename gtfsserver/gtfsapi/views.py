@@ -281,8 +281,11 @@ class RideView(APIView):
                     longitude = i['longitude']
                     arrival_time = i['arrival_time']
                     departure_time = i['departure_time']
+                    stop_name = i['stop_name']
+                    stop_designation = i['stop_designation']
                     new_stop = NewStop(ride=Ride.objects.get(id=ride_id), latitude=latitude, longitude=longitude,
-                                       arrival_time=arrival_time, departure_time=departure_time)
+                                       arrival_time=arrival_time, departure_time=departure_time, stop_name=stop_name,
+                                       stop_designation=stop_designation)
                     new_stop.save()
 
         return Response({"success": True})

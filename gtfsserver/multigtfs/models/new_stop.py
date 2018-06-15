@@ -19,6 +19,14 @@ class NewStop(Base):
     To reference new stops data in the GTFS feed.
     """
     ride = models.ForeignKey('Ride')
+    stop_name = models.CharField(
+        max_length=255, blank=True, null=True,
+        help_text='What is the name of the stop?'
+    )
+    stop_designation = models.CharField(
+        max_length=255, blank=True, null=True,
+        help_text='What is the official designation status of the stop?'
+    )
     latitude = models.CharField(
         max_length=255, blank=True, null=True,
         help_text='WGS 84 latitude of stop or station')

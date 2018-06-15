@@ -142,11 +142,11 @@ def trip_detail_view(request, **kwargs):
 
     corridor_prefix = trip.route.route_id[0].zfill(2)
     inbound_status = trip.direction
-
+    direction = 'inbound' if inbound_status == '0' else 'outbound'
     cursor = connection.cursor()
     cursor.execute(
-        "SELECT n.id, n.latitude, n.longitude FROM multigtfs_ride r JOIN multigtfs_newstop n ON(n.ride_id=r.id)"
-        " WHERE r.route_id = " + kwargs['route_id'])
+        "SELECT n.id, n.latitude, n.longitude, CONCAT(n.stop_name, ' (', n.stop_designation, ')') AS name FROM multigtfs_ride r JOIN multigtfs_newstop n ON(n.ride_id=r.id)"
+        " WHERE r.route_id = " + kwargs['route_id'] + " AND r.direction = '" + direction + "'")
     columns = [column[0] for column in cursor.description]
     new_stops = []
 
@@ -156,7 +156,7 @@ def trip_detail_view(request, **kwargs):
 
     cursor.execute(
         "SELECT CONCAT(n.longitude, ' ', n.latitude) FROM multigtfs_ride r JOIN multigtfs_newroute n ON(n.ride_id=r.id)"
-        " WHERE r.route_id = " + kwargs['route_id'])
+        " WHERE r.route_id = " + kwargs['route_id'] + " AND r.direction = '" + direction + "'")
     new_stops_route = []
 
     for row in cursor.fetchall():
@@ -216,7 +216,6 @@ def add_stop_ajax(request, **kwargs):
     if request.method == 'POST':
         if request.is_ajax():
             request_params = request.POST.dict()
-            print(request_params)
             try:
                 valid = False
                 stop_id_prefix = request_params.get('stop_id_prefix')
@@ -450,7 +449,6 @@ def new_route(request, **kwargs):
         try:
             # Build route_id
             request_params = request.POST.dict()
-            print(request_params)
             # prepend zeros to the route number
             request_params['route-number'] = request_params['route-number'].zfill(4)
 
