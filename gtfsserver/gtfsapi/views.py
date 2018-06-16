@@ -111,8 +111,8 @@ class NewRouteView(APIView):
         try:
             json_data = json.loads(request.body)
             data = json_data['data']
-            agency_id = 1  # hard-coded for digital matatus
-            feed_id = 1  # hard-coded for digital matatus data
+            agency_id = Agency.objects.filter(agency_id='UON').first().id  # hard-coded for digital matatus
+            feed_id = Feed.objects.filter(name='Digital Matatus').first().id  # hard-coded for digital matatus data
 
             # create a new route
             request_params = data['new_route_details']
@@ -164,7 +164,7 @@ class RideView(APIView):
             if data['new_route'] == 'true':
                 # create a new trip
 
-                feed_id = 1  # hard-coded for digital matatus data
+                feed_id = Feed.objects.filter(name='Digital Matatus').first().id  # hard-coded for digital matatus data
                 request_params = data['new_trip_details']
 
                 # Trip variables
