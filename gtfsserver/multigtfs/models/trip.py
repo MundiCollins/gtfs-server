@@ -40,7 +40,7 @@ class Trip(Base):
         max_length=63, blank=True,
         help_text="Short name used in schedules and signboards.")
     direction = models.CharField(
-        max_length=1, blank=True,
+        max_length=7, blank=True,
         choices=(('0', '0'), ('1', '1')),
         help_text="Direction for bi-directional routes.")
     block = models.ForeignKey(
