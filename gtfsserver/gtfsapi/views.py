@@ -172,7 +172,7 @@ class RideView(APIView):
                 service_id = "1"  # hard-coded:
                 origin = request_params['origin']
                 route_variation = request_params['route_variation']
-                direction = data['inbound'],
+                direction = int(data['inbound']),
                 route_id = int(data['route_id'])
                 route = Route.objects.get(id=route_id)
 
