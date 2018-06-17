@@ -172,7 +172,7 @@ class RideView(APIView):
                 service_id = Service.objects.get(service_id='DAILY').id  # hard-coded:
                 origin = request_params['origin']
                 route_variation = request_params['route_variation']
-                direction = data['inbound'],
+                direction = int(data['inbound'])
                 route_id = int(data['route_id'])
                 route = Route.objects.get(id=route_id)
 
@@ -282,7 +282,7 @@ class RideView(APIView):
                     arrival_time = i['arrival_time']
                     departure_time = i['departure_time']
                     stop_name = i['stop_name']
-                    stop_designation = i['stop_designation']
+                    stop_designation = i['designation']
                     new_stop = NewStop(ride=Ride.objects.get(id=ride_id), latitude=latitude, longitude=longitude,
                                        arrival_time=arrival_time, departure_time=departure_time, stop_name=stop_name,
                                        stop_designation=stop_designation)
