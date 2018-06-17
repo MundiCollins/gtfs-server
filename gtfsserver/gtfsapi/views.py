@@ -169,7 +169,7 @@ class RideView(APIView):
 
                 # Trip variables
                 headsign = request_params['headsign']
-                service_id = "1"  # hard-coded:
+                service_id = Service.objects.get(service_id='DAILY').id  # hard-coded:
                 origin = request_params['origin']
                 route_variation = request_params['route_variation']
                 direction = data['inbound'],
