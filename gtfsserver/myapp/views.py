@@ -138,7 +138,6 @@ def trip_detail_view(request, **kwargs):
     context = dict()
 
     trip = Trip.objects.get(pk=kwargs['pk'])
-    trip.update_geometry()
 
     corridor_prefix = trip.route.route_id[0].zfill(2)
     inbound_status = trip.direction

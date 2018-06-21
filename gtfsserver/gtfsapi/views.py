@@ -222,6 +222,7 @@ class RideView(APIView):
                     delta = 5 * 60  # % minutes
                     stop_sequence = 0
 
+                    wkt = 'LINESTRING ('
                     for row in data['stops']:
                         tmp = list(row['stop_name'].upper().replace(' ', ''))
                         random.shuffle(tmp)
@@ -246,10 +247,13 @@ class RideView(APIView):
                         ))
                         start_seconds += delta
 
-                    trip.save()
-                    trip.update_geometry()
-                    trip.refresh_from_db()
+                        i = str(row['longitude']) + ' ' + str(row['latitude'])
+                        wkt += i + ', '
 
+                    wkt = wkt[:-2]
+                    wkt += ')'
+                    trip.geometry = wkt
+                    trip.save()
             else:
                 route_id = int(data['route_id'])
                 route_name = data['route_name']
