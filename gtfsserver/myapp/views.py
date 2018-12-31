@@ -135,45 +135,28 @@ class RouteDetailView(generic.DetailView):
 
 
 def trip_detail_view(request, **kwargs):
+    other_agency_id = 25
     context = dict()
 
     trip = Trip.objects.get(pk=kwargs['pk'])
+    route = Route.objects.get(id=kwargs['route_id'])
+    other_route = Route.objects.filter(route_id=route.route_id).filter(agency_id=other_agency_id).first()
 
     corridor_prefix = trip.route.route_id[0].zfill(2)
     inbound_status = trip.direction
-    direction = 'inbound' if inbound_status == '0' else 'outbound'
-    cursor = connection.cursor()
-    cursor.execute(
-        "SELECT n.id, n.latitude, n.longitude, CONCAT(n.stop_name, ' (', n.stop_designation, ')') AS name FROM multigtfs_ride r JOIN multigtfs_newstop n ON(n.ride_id=r.id)"
-        " WHERE r.route_id = " + kwargs['route_id'] + " AND r.direction = '" + direction + "'")
-    columns = [column[0] for column in cursor.description]
-    new_stops = []
 
-    for row in cursor.fetchall():
-        new_stops.append(dict(zip(columns, row)))
-    new_stops = yaml.load(json.dumps(new_stops))
-
-    cursor.execute(
-        "SELECT CONCAT(n.longitude, ' ', n.latitude) FROM multigtfs_ride r JOIN multigtfs_newroute n ON(n.ride_id=r.id)"
-        " WHERE r.route_id = " + kwargs['route_id'] + " AND r.direction = '" + direction + "'")
-    new_stops_route = []
-
-    for row in cursor.fetchall():
-        for i in row:
-            i = i.encode('latin-1')
-            i = i.translate(None, "()#")
-            new_stops_route.append(i)
-    stops = Stop.objects.filter(parent_station__isnull=True).order_by('name')
+    try:
+        other_trip = Trip.objects.filter(route_id=other_route.id).filter(direction=inbound_status).first()
+    except:
+        other_trip = {}
 
     context['agency_id'] = kwargs['agency_id']
     context['feed_id'] = kwargs['feed_id']
     context['route_id'] = kwargs['route_id']
     context['trip'] = trip
-    context['stops'] = stops
+    context['other_trip'] = other_trip
     context['corridor'] = corridor_prefix
     context['inbound_status'] = inbound_status
-    context['new_stops'] = new_stops
-    context['new_stops_route'] = new_stops_route
 
     if request.method == 'POST':
         start_seconds = 6 * 3600  # First trip is at 6am

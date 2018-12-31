@@ -37,8 +37,6 @@
             var mapzen_tracing = false;
             var waypoints = [];
             var waypoints1 = [];
-            var new_stops = {{new_stops|safe}};
-            var new_stops_num = new_stops.length;
             var wkt = new Wkt.Wkt();
             var wkt_object;
             var wkt_object_inline;
@@ -78,23 +76,10 @@
             var blueIcon = new BlueIconClass();
             var orangeIcon = new OrangeIconClass();
 
-            var new_routes = '{{ new_stops_route }}';
-
-            var split = new_routes.split(';');
-            var wkt_components = split.length;
-            if(wkt_components > 1) {
-                var new_set = 'LINESTRING (';
-                for (var i = 0; i < wkt_components; ++i) {
-                    if (i % 2 === 1) {
-                        new_set += split[i].replace('&#39', '') + ',';
-                    }
-                }
-                new_set = new_set.slice(0, -1);
-                new_set += ')';
-                wkt1.read(new_set);
-            }
-
             wkt.read('{{ trip.geometry.wkt }}');
+            if (! '{{ other_trip }}' == '{}') {
+                wkt1.read('{{ other_trip.geometry.wkt }}');
+            }
 
             // Main map
             L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png?api_key=L9OxhE2tToG23EKZgjKTUA', {
@@ -148,8 +133,7 @@
             wkt_object.addTo(drawnItems);
             map.fitBounds(wkt_object.getBounds());
 
-            if(wkt_components > 1) {
-
+            if (! '{{ other_trip }}' == '{}') {
                 wkt1_object_inline = wkt1.toObject();
                 wkt1_object_inline.addTo(inline_map);
 
@@ -157,7 +141,6 @@
                 wkt1_object.addTo(drawnItems);
                 map.fitBounds(wkt1_object.getBounds());
             }
-
 
             {% for stop_time in trip.stoptime_set.all|dictsort:'stop_sequence' %}
                 waypoints.push({
@@ -175,37 +158,21 @@
                 });
             {% endfor %}
 
-            for(var i=0; i<new_stops_num; ++i) {
-                var name = '';
-                if(new_stops[i].name !== '()') {
-                    name = new_stops[i].name;
-                }
-                else {
-                    name = 'new';
-                }
-                if(i === 0 || i === new_stops_num - 1) {
-                    waypoints1.push({
-                        lat: Number(new_stops[i].latitude),
-                        lon: Number(new_stops[i].longitude),
-                        id: new_stops[i].id,
+            {% for stop_time in other_trip.stoptime_set.all|dictsort:'stop_sequence' %}
+                waypoints1.push({
+                    lat: {{ stop_time.stop.point.y }},
+                    lon: {{ stop_time.stop.point.x }},
+                    id: {{ stop_time.stop.id }},
+                    icon: orangeIcon,
+                    name: "{{ stop_time.stop.name|safe }}",
+                    label: "drag",
+                    {% if forloop.first or forloop.last %}
                         type: 'break',
-                        icon: orangeIcon,
-                        name: name,
-                        label: ''
-                    });
-                }
-                else {
-                    waypoints1.push({
-                        lat: Number(new_stops[i].latitude),
-                        lon: Number(new_stops[i].longitude),
-                        id: new_stops[i].id,
+                    {% else %}
                         type: 'through',
-                        icon: orangeIcon,
-                        name: name,
-                        label: '',
-                    });
-                }
-            }
+                    {% endif %}
+                });
+            {% endfor %}
 
             generateRoute('{% url 'get_route_ajax' %}', waypoints);  // DRAW MAP AND PLOT ROUTE
             generateNewRoute('{% url 'get_route_ajax' %}', waypoints1);  // DRAW MAP AND PLOT ROUTE
@@ -215,19 +182,20 @@
                 var old_lon = data.marker.options.oldLatLng.lng;
 
                 var message = 'Do you want to make this change permananent on the stop <strong>"' + (data.marker.options.title) + '"</strong>?'
-                bootbox.confirm(message, function (response) {
-                    if (!response) {
-                        data.marker.setLatLng(data.marker.options.oldLatLng);
-                        delete data.marker.options.oldLatLng;
-                    } else {
-                         waypoints.filter(function (item) {
-                             if (item.lat === old_lat && item.lon === old_lon) {
+
+                 waypoints.filter(function (item) {
+                     if (item.lat === old_lat && item.lon === old_lon) {
+                          bootbox.confirm(message, function (response) {
+                              if (!response) {
+                                    data.marker.setLatLng(data.marker.options.oldLatLng);
+                                    delete data.marker.options.oldLatLng;
+                              } else {
                                   var point = wkt.fromObject(data.marker).write();
                                   var params = {
-                                    pk: waypoints[data.index].id,
-                                    point: point,
-                                    csrfmiddlewaretoken: '{{ csrf_token }}',
-                                  }
+                                     pk: waypoints[data.index].id,
+                                     point: point,
+                                     csrfmiddlewaretoken: '{{ csrf_token }}',
+                                  };
 
                                   // Update waypoint after dragging
                                   waypoints[data.index].lat = data.marker.getLatLng().lat;
@@ -250,46 +218,11 @@
 
                                   // Save on behalf of the user
                                   $('#current-stops form').submit();
-                             }
-                         });
-                         waypoints1.filter(function (item) {
-                             if (item.lat === old_lat && item.lon === old_lon) {
-                                  bootbox.prompt({
-                                      size: "small",
-                                      title: "Provide a name for the stop",
-                                      callback: function(result){
-                                          if(!result) {
-                                              data.marker.setLatLng(data.marker.options.oldLatLng);
-                                              delete data.marker.options.oldLatLng;
-                                          }
-                                          else {
-                                              var stop_name = result;
+                              }
+                          });
 
-                                              var point = wkt.fromObject(data.marker).write();
-                                              var params = {
-                                                  pk: waypoints1[data.index].id,
-                                                  name: stop_name,
-                                                  point: point,
-                                                  feed_id: {{ feed_id }},
-                                                  csrfmiddlewaretoken: '{{ csrf_token }}',
-                                              };
-
-                                              // Update waypoint after dragging
-                                              item.lat = data.marker.getLatLng().lat;
-                                              item.lon = data.marker.getLatLng().lng;
-
-                                              //Delete old point
-                                              waypoints1.splice(data.index,1);
-
-                                              // confirm new stop
-                                              confirmStop('{% url 'confirm_stop_ajax' %}', params);
-                                          }
-                                      }
-                                  });
-                             }
-                         });
-                    }
-                });
+                     }
+                 });
             });
 
             $(document).on('routeGenerated', function (e, data) {
