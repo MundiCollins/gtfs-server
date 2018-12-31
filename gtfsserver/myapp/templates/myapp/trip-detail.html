@@ -77,7 +77,7 @@
             var orangeIcon = new OrangeIconClass();
 
             wkt.read('{{ trip.geometry.wkt }}');
-            if (! '{{ other_trip }}' == '{}') {
+            if ('{{ other_trip }}' != '{}') {
                 wkt1.read('{{ other_trip.geometry.wkt }}');
             }
 
@@ -133,7 +133,7 @@
             wkt_object.addTo(drawnItems);
             map.fitBounds(wkt_object.getBounds());
 
-            if (! '{{ other_trip }}' == '{}') {
+            if ('{{ other_trip }}' != '{}') {
                 wkt1_object_inline = wkt1.toObject();
                 wkt1_object_inline.addTo(inline_map);
 
