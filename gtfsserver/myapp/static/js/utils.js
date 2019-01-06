@@ -328,44 +328,57 @@ function refreshWaypoints(waypoints) {
     });
 }
 
-function insertWaypoint(map, newWaypoint, waypoints) {
-    var points = $.map(waypoints, function (waypoint) {
-        return L.latLng(waypoint.lat, waypoint.lon);
-    });
-
-    var new_point = L.latLng(newWaypoint.lat,newWaypoint.lon);
-    var closest = L.GeometryUtil.closest(map, points, new_point, true);
-    var insert_after = false;
-
-    for (var index = 0; index < points.length; index++) {
-        var cur = L.latLng(points[index].lat, points[index].lng);
-        if ((cur.lat == closest.lat) && (cur.lng == closest.lng)) {
-            //var angle = L.GeometryUtil.computeAngle(map.latLngToLayerPoint(closest), map.latLngToLayerPoint(new_point));
-            var angle = L.GeometryUtil.bearing(closest, new_point);
-            if (angle >= 0 && angle <= 180) {
-                insert_after = true;
-            }
-            break;
-        }
-    }
-
-    // Get the corresponding stop on the list
-    var anchorElement = $('#current-stops form > ul').children().eq(index);
-
+function insertWaypoint(map, newWaypoint, waypoints, precedingStop) {
+    var anchorElement = null;
     // Insert stop at correct location in the current stops list
     var source = $("#add-current-stop-item-template").html();
     var template = Handlebars.compile(source);
     var context = {
         name: newWaypoint.name,
         id: newWaypoint.id,
-    }
+    };
 
-    if (insert_after) {
-        waypoints.splice(index + 1, 0, newWaypoint);
-        anchorElement.after(template(context))
-    } else {
-        waypoints.splice(index, 0, newWaypoint);
-        anchorElement.before(template(context))
+    if(precedingStop) {
+        for (var index = 0; index < waypoints.length; index++) {
+            if(waypoints[index].id === precedingStop) {
+                waypoints.splice(index + 1, 0, newWaypoint);
+                // Get the corresponding stop on the list
+                anchorElement = $('#current-stops form > ul').children().eq(index);
+                anchorElement.after(template(context));
+                break;
+            }
+        }
+    }
+    else {
+        var insert_after = false;
+        var points = $.map(waypoints, function (waypoint) {
+            return L.latLng(waypoint.lat, waypoint.lon);
+        });
+
+        var new_point = L.latLng(newWaypoint.lat,newWaypoint.lon);
+        var closest = L.GeometryUtil.closest(map, points, new_point, true);
+
+        for (var index = 0; index < points.length; index++) {
+            var cur = L.latLng(points[index].lat, points[index].lng);
+            if ((cur.lat == closest.lat) && (cur.lng == closest.lng)) {
+                //var angle = L.GeometryUtil.computeAngle(map.latLngToLayerPoint(closest), map.latLngToLayerPoint(new_point));
+                var angle = L.GeometryUtil.bearing(closest, new_point);
+                if (angle >= 0 && angle <= 180) {
+                    insert_after = true;
+                }
+                break;
+            }
+        }
+
+        // Get the corresponding stop on the list
+        anchorElement = $('#current-stops form > ul').children().eq(index);
+        if (insert_after) {
+            waypoints.splice(index + 1, 0, newWaypoint);
+            anchorElement.after(template(context));
+        } else {
+            waypoints.splice(index, 0, newWaypoint);
+            anchorElement.before(template(context));
+        }
     }
 
     // Refresh editable binding???

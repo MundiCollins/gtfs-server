@@ -213,7 +213,7 @@
                                   anchor.remove();
 
                                   //Re-insert at new position
-                                  waypoints = insertWaypoint(map, newWaypoint, waypoints);
+                                  waypoints = insertWaypoint(map, newWaypoint, waypoints, 0);
                                   updateStop('{% url 'update_stop_ajax' %}', params);
                                   generateRoute('{% url 'get_route_ajax' %}', waypoints);
 
@@ -324,9 +324,11 @@
                     id: data.stop.id,
                     type: 'through',
                     icon: redIcon
-                }
+                };
 
-                waypoints = insertWaypoint(map, newWaypoint, waypoints);
+                var precedingStop = Number($('#preceding-stop').val()) || 0;
+
+                waypoints = insertWaypoint(map, newWaypoint, waypoints, precedingStop);
 
                 // Refresh map after updating waypoints
                 generateRoute('{% url 'get_route_ajax' %}', waypoints);
@@ -556,6 +558,15 @@
                                 <select class="form-control" id="stop-designation" name="stop-designation">
                                     <option value="1">Designated</option>
                                     <option value="0">Undesignated</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">Select preceding stop (optional):</label>
+                                <select class="form-control" id="preceding-stop">
+                                    <option value="">--</option>
+                                    {% for stop_time in trip.stoptime_set.all|dictsort:'stop_sequence' %}
+                                        <option value="{{ stop_time.stop.id }}">{{ stop_time.stop.name }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             <div class="form-group">
