@@ -32,6 +32,7 @@
     <script src="{% static 'js/leaflet.geometryutil.js' %}"></script>
     <script src="{% static 'js/bootstrap-switch.js' %}"></script>
     <script src="{% static 'js/leaflet.draw.js' %}"></script>
+    <script src="{% static 'js/jquery-ui.min.js' %}"></script>
     <script>
         $(document).ready(function () {
             var mapzen_tracing = false;
@@ -467,6 +468,60 @@
                 }
                 updateTrip('{% url 'update_trip_ajax' %}', params);
             });
+
+            $(".stops-list").sortable({
+                axis: 'y',
+                placeholder: 'slide-placeholder',
+                revert: 150,
+                start: function (e, ui) {
+                    var placeholderHeight = ui.item.outerHeight();
+                    ui.placeholder.height(placeholderHeight);
+                    ui.placeholder.css({
+                        'margin-top': ui.item.css('margin-top'),
+                        'margin-right': ui.item.css('margin-right'),
+                        'margin-bottom': ui.item.css('margin-bottom'),
+                        'margin-left': ui.item.css('margin-left')
+                    });
+                    startPosition = ui.item.index();
+                    $('<div class="slide-placeholder-animator" data-height="' + placeholderHeight + '"></div>').insertAfter(ui.placeholder);
+                },
+                change: function (event, ui) {
+                    ui.placeholder.stop().height(0).animate({
+                        height: ui.item.outerHeight(),
+                        marginTop: parseInt(ui.item.css('margin-top')),
+                        marginRight: parseInt(ui.item.css('margin-right')),
+                        marginBottom: parseInt(ui.item.css('margin-bottom')),
+                        marginLeft: parseInt(ui.item.css('margin-left'))
+                    }, 150);
+                    placeholderAnimatorHeight = parseInt($(".slide-placeholder-animator").attr("data-height"));
+
+                    $(".slide-placeholder-animator").stop().height(placeholderAnimatorHeight).animate({
+                        height: 0,
+                        marginTop: 0,
+                        marginRight: 0,
+                        marginBottom: 0,
+                        marginLeft: 0
+                    }, 150, function () {
+                        $(this).remove();
+                        var placeholderHeight = ui.item.outerHeight();
+                        $('<div class="slide-placeholder-animator" data-height="' + placeholderHeight + '"></div>').insertAfter(ui.placeholder);
+                    });
+                },
+                stop: function (e, ui) {
+                    $(".slide-placeholder-animator").remove();
+                    if(startPosition !== ui.item.index()) {
+                        bootbox.confirm('Do you want to make this change permananent on the stops sequence?', function(response){
+                            if(response) {
+                                waypoints = shiftWaypoint(waypoints, startPosition, ui.item.index());
+                                generateRoute('{% url 'get_route_ajax' %}', waypoints);
+
+                                // Save on behalf of the user
+                                $('#current-stops form').submit();
+                            }
+                        });
+                    }
+                },
+            });
         });
     </script>
 {% endblock %}
@@ -573,9 +628,9 @@
             <div class="row" id="current-stops_list">
                 <h3>Current Stops </h3>
                 <form method="post">
-                    <ul>
+                    <ul class="stops-list">
                         {% for stop_time in trip.stoptime_set.all|dictsort:'stop_sequence' %}
-                            <li>
+                            <li id="{{ stop_time.stop.id }}">
                                 <div class="form-group">
                                     <a href="#" class="{{user.is_staff|yesno:"editable,"}}" id="name" data-type="text"
                                        data-pk="{{ stop_time.stop.id }}" data-url="{% url 'update_stop_ajax' %}"

@@ -390,3 +390,14 @@ function confirmStop(url, data) {
         $(document).trigger('error', {message: 'Failed due to: ' + status + " " + error})
     });
 }
+
+function shiftWaypoint(waypoints, old_index, new_index) {
+    if (new_index >= waypoints.length) {
+        var k = new_index - waypoints.length + 1;
+        while (k--) {
+            waypoints.push(undefined);
+        }
+    }
+    waypoints.splice(new_index, 0, waypoints.splice(old_index, 1)[0]);
+    return waypoints;
+}
