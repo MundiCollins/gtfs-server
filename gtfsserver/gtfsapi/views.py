@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.views import APIView
 
-from django.db import transaction
+from django.db import transaction, connection
 from django.contrib.gis import geos
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -323,5 +323,55 @@ class FareView(APIView):
         fare.music = json_data['music']
         fare.internet = json_data['internet']
         fare.save()
+
+        return Response({"success": True})
+
+
+class AddShapePoints(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    @csrf_exempt
+    @method_decorator(public)
+    def get(self, request):
+        trip_id = request.query_params['trip_id']
+        trip = Trip.objects.get(id=trip_id)
+        shape_id = trip.shape_id
+
+        if not shape_id:
+            route_id = trip.route_id
+            route = Route.objects.get(id=route_id)
+
+            # corridor + 4 characters for the route number
+            corridor = route.route_id[0]
+            route_number = route.route_id[5:9]
+            direction = trip.direction
+            feed_id = route.feed_id
+
+            new_shape_id = "{}{}11{}".format(corridor, route_number, direction)
+            shape = Shape.objects.create(feed_id=feed_id, shape_id=new_shape_id)
+
+            trip.shape_id = shape_id = shape.id
+            trip.save()
+
+        shape = Shape.objects.get(id=shape_id)
+        sequence_start = 3001
+        shape_key = 0
+
+        cursor = connection.cursor()
+        cursor.execute("SELECT ST_AsText(geometry) FROM trip WHERE id={}".format(trip_id))
+        for row in cursor.fetchall():
+            points = row[0].split('LINESTRING(')[1].split(')')[0]
+            for point in points.split(','):
+                pt = point.split(' ')
+
+                ShapePoint.objects.create(
+                    point='POINT ({} {})'.format(pt[0], pt[1]),
+                    shape_id=shape_id,
+                    sequence=sequence_start + shape_key
+                )
+                shape_key += 1
+
+        shape.update_geometry()
 
         return Response({"success": True})

@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .views import (
     FeedViewSet, FeedGeoViewSet, AgencyViewSet, ServiceViewSet, RouteViewSet,
-    TripViewSet, StopViewSet, ServiceDateViewSet, StopTimeViewSet, NewRouteView, RideView, FareView)
+    TripViewSet, StopViewSet, ServiceDateViewSet, StopTimeViewSet, NewRouteView, RideView, FareView, AddShapePoints)
 from .nested_views import (
     FeedAgencyViewSet, FeedRouteViewSet, FeedGeoRouteViewSet,
     FeedStopViewSet, FeedGeoStopViewSet,
@@ -33,6 +33,7 @@ router.register(r'trips', TripViewSet)
 router.register(r'new_route', csrf_exempt(NewRouteView), base_name='ride')
 router.register(r'ride', csrf_exempt(RideView), base_name='ride')
 router.register(r'fare', csrf_exempt(FareView), base_name='fare')
+router.register(r'add-shape-points', csrf_exempt(AddShapePoints), base_name='addShapePoints')
 
 feeds_router = routers.NestedSimpleRouter(router, r'feeds', lookup='feed')
 
@@ -99,6 +100,7 @@ urls = [
     url(u'^new_route/', csrf_exempt(NewRouteView.as_view()), name="route"),
     url(u'^ride/', csrf_exempt(RideView.as_view()), name="ride"),
     url(u'^fare/', csrf_exempt(FareView.as_view()), name="fare"),
+    url(u'^add-shape-points/', csrf_exempt(AddShapePoints.as_view()), name="addShapePoints"),
 
 ]
 urlpatterns = router.urls + feeds_router.urls + services_router.urls + routes_router.urls + stops_router.urls +  trips_router.urls + urls
