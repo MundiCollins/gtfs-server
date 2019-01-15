@@ -107,18 +107,20 @@
                 var layers = e.layers;
                 layers.eachLayer(function (layer) {
                     //do whatever you want, most likely save back to db
-                    bootbox.confirm('Do you want to update the shape file in the database?', function (response) {
-                        if (response){
-                            // Make API Call
-                            var params = {
-                                id: "{{ trip.shape.id }}",
-                                points: JSON.stringify(layer._latlngs),
-                                csrfmiddlewaretoken: '{{ csrf_token }}',
-                            }
+                    if(layer.order === 1) {
+                        bootbox.confirm('Do you want to update the shape file in the database?', function (response) {
+                            if (response){
+                                // Make API Call
+                                var params = {
+                                    id: "{{ trip.shape.id }}",
+                                    points: JSON.stringify(layer._latlngs),
+                                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                                }
 
-                            update_shape('{% url 'update_shape_ajax' %}', params);
-                        }
-                    });
+                                update_shape('{% url 'update_shape_ajax' %}', params);
+                            }
+                        });
+                    }
                 });
             });
 
@@ -131,6 +133,7 @@
             wkt_object_inline.addTo(inline_map);
 
             wkt_object = wkt.toObject();
+            wkt_object.order = 1;
             wkt_object.addTo(drawnItems);
             map.fitBounds(wkt_object.getBounds());
 
