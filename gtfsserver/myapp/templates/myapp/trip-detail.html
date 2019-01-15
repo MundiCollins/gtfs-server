@@ -151,6 +151,7 @@
                     icon: blueIcon,
                     name: "{{ stop_time.stop.name|safe }}",
                     label: "drag",
+                    allowSave: true,
                     {% if forloop.first or forloop.last %}
                         type: 'break',
                     {% else %}
@@ -167,6 +168,7 @@
                     icon: orangeIcon,
                     name: "{{ stop_time.stop.name|safe }}",
                     label: "drag",
+                    allowSave: false,
                     {% if forloop.first or forloop.last %}
                         type: 'break',
                     {% else %}

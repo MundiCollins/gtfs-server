@@ -151,13 +151,15 @@ function getMarkersFromWaypoints(waypoints) {
         var marker;
         if(waypoint.label === "drag") {
             marker = new L.Marker(markerLocation, {title: waypoint.name, draggable: true, index: index, icon: waypoint.icon});
-            marker.on('dragend', function (e) {
-                $(document).trigger('markerDragEnd', {index: e.target.options.index, marker: e.target});
-            });
+            if(waypoint.allowSave) {
+                marker.on('dragend', function (e) {
+                    $(document).trigger('markerDragEnd', {index: e.target.options.index, marker: e.target});
+                });
 
-            marker.on('dragstart', function (e) {
-                this.options['oldLatLng'] = this.getLatLng();
-            });
+                marker.on('dragstart', function (e) {
+                    this.options['oldLatLng'] = this.getLatLng();
+                });
+            }
         }
         else {
             marker = new L.Marker(markerLocation, {title: waypoint.name, draggable: false, index: index, icon: waypoint.icon});
