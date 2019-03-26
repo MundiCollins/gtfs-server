@@ -54,6 +54,7 @@
             var inline_map = L.map('inline-map', {crs: L.CRS.EPSG4326});
             var popup = L.popup();
             var stop_marker = L.marker();
+            var addingStop = false;
 
             var RedIconClass = L.Icon.Default.extend({
                 options: {
@@ -295,6 +296,13 @@
                 });
             });
 
+            $(document).on('routeGenerated', function (e, data) {
+                if(addingStop) {
+                    // Save on behalf of the user
+                    $('#current-stops form').submit();
+                }
+            });
+
             $('#stop-form').on('submit', function (event) {
                 var stop_name = $('#stop-name').val().trim();
 
@@ -330,17 +338,15 @@
                     type: 'through',
                     icon: redIcon
                 };
+                addingStop = true;
+
+                $("#current-stops form").append('<input type="hidden" name="stop_id" value="' + data.stop.id + '">');
 
                 var precedingStop = Number($('#preceding-stop').val()) || 0;
 
                 waypoints = insertWaypoint(map, newWaypoint, waypoints, precedingStop);
-
                 // Refresh map after updating waypoints
                 generateRoute('{% url 'get_route_ajax' %}', waypoints);
-
-                // Save on behalf of the user
-                $('#current-stops form').submit();
-
             });
 
             $('#save-stop').on('click', function () {
